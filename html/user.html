@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/user.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title>Document</title>
+</head>
+<body>
+    <div class="user-form">
+        <h1 class="user-form-title">Postavke korisničkog računa</h1>
+        <hr class="divider"/>
+        <p class="subtitle">Upravljajte vašim korisničkim računom, sigurnosnim postavkama i notifikacijama</p>
+        <div class="user-info">
+            <h2 class="section-title">Podaci o korisničkom računu</h2>
+            <div class="form-row">
+                <label class="field-label" for="fullName">Ime i Prezime</label>
+                <input class="input-field" type="text" placeholder="Tadej Pogačar"/>
+            </div>
+            <div class="form-row">
+                <label class="field-label" for="email">Email adresa</label>
+                <input class="input-field" type="text" placeholder="tamaupogi@gmail.com"/>
+            </div>
+            <div class="form-row">
+                <label class="field-label" for="items">Broj elemenata po stranici (1–100)</label>
+                <input type="number" id="items" class="input-field" min="1" max="100" value="25" required/>
+            </div>
+        </div>
+        <div class="user-info security-settings">
+            <h2 class="section-title security-title">Sigurnosne postavke</h2>
+            <div class="form-row">
+                <label class="field-label" for="password">Nova šifra</label>
+                <input type="password" id="password" class="input-field red-border" placeholder="********"/>
+            </div>
+            <small class="hint">Ostavite prazno da zadržite trenutnu šifru.</small>
+            <div class="checkbox-field">
+                <input type="checkbox" id="2fa" />
+                <label for="2fa">Omogući Two-Factor Authentication (2FA)</label>
+            </div>
+        </div>
+        <div class="user-info notifications">
+            <h2 class="section-title notification-title">Notifikacije</h2>
+            <div class="form-row">
+                <label class="field-label">Preferirani način komunikacije</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="contact" value="email" checked> Email</label>
+                    <label><input type="radio" name="contact" value="sms"> SMS (Text)</label>
+                    <label><input type="radio" name="contact" value="none"> None</label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label class="field-label" for="frequency">Frekvencija notifikacija</label>
+                <select id="frequency" class="input-field green-border">
+                    <option selected>Daily</option>
+                    <option>Weekly</option>
+                    <option>Monthly</option>
+                    <option>Never</option>
+                </select>
+            </div>
+        </div>
+        <hr/ class="divider gray-div">
+        <div class="user-info btn">
+        <button class="save-btn">Spasi promjene</button>
+        </div>
+    </div>
+</body>
+</html>
