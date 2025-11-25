@@ -23,7 +23,7 @@ window.addEventListener("DOMContentLoaded", function () {
     const btnBold = document.getElementById("btnBold");
     if (btnBold) {
         btnBold.addEventListener("click", function () {
-            editor.formatirajTekst("b");
+            editor.formatirajTekst("bold");
         });
 
     }
@@ -31,14 +31,14 @@ window.addEventListener("DOMContentLoaded", function () {
     const btnItalic = document.getElementById("btnItalic");
     if (btnItalic) {
         btnItalic.addEventListener("click", function () {
-            editor.formatirajTekst("i");
+            editor.formatirajTekst("italic");
         });
     }
 
     const btnUnderline = document.getElementById("btnUnderline");
     if (btnUnderline) {
         btnUnderline.addEventListener("click", function () {
-            editor.formatirajTekst("u");
+            editor.formatirajTekst("underline");
         });
     }
 

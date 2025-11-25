@@ -119,7 +119,7 @@ let EditorTeksta = function (divRef) {
         };
     };
 
-    let dajUloge = function () {
+    let dajSveUloge = function () {
         const lines = div.innerText
             .split("\n")
             .map(l => l.trim())
@@ -132,6 +132,22 @@ let EditorTeksta = function (divRef) {
         }
         return uloge;
     };
+
+    let dajUloge = function () {
+    const sve = dajSveUloge(); 
+    const vidjene = new Set();
+    const rezultat = [];
+
+    for (const uloga of sve) {
+        if (!vidjene.has(uloga)) {
+            vidjene.add(uloga);
+            rezultat.push(uloga);
+        }
+    }
+
+    return rezultat;
+};
+
 
 
     let daLiJeSlicno = function (check, target) {
@@ -170,7 +186,7 @@ let EditorTeksta = function (divRef) {
 
     let pogresnaUloga = function () {
         let pogresni = [];
-        let sveUloge = dajUloge();
+        let sveUloge = dajSveUloge();
         for (let i = 0; i < sveUloge.length; i++) {
             for (let j = 0; j < sveUloge.length; j++) {
                 let x = dajBrojPonavljanja(sveUloge, sveUloge[j]);
@@ -186,112 +202,87 @@ let EditorTeksta = function (divRef) {
         return pogresni;
     }
 
-    let brojiReplike = function (ime) {
-    const text = div.innerHTML
-        .replace(/<br\s*\/?>/gi, "\n")
-        .replace(/\r\n/g, "\n")        
-        .replace(/\r/g, "\n")          
-        .replace(/\n+/g, "\n")         
-        .trim();
-    const lines = text.split("\n");
-    let count = 0;
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        const isCharacterName = /^[A-Z0-9 ]+$/.test(line);
-        if (!isCharacterName) {
-            continue;
-        }
-        if (line !== ime) {
-            continue;
-        }
-        const nextLine = (lines[i + 1] || "").trim();
-        const nextIsCharacterName = /^[A-Z0-9 ]+$/.test(nextLine);
-        if (nextLine.length > 0 && !nextIsCharacterName) {
-            count++;
-        }
-    }
-    return count;
-};
-
 
 let formatirajTekst = function (komanda) {
     const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) {
-        return;
-    }
+    if (!sel || sel.rangeCount === 0) return false;
+    if (sel.isCollapsed) return false;
     const range = sel.getRangeAt(0);
     let container = range.commonAncestorContainer;
     if (container.nodeType === Node.TEXT_NODE) {
         container = container.parentNode;
     }
-    if (!div.contains(container)) {
-        return;
-    }
-    if (sel.isCollapsed) {
-        return;
+    if (!div.contains(container)) return false;
+    let tag = "";
+    if (komanda === "bold") tag = "b";
+    else if (komanda === "italic") tag = "i";
+    else if (komanda === "underline") tag = "u";
+    else return false;
+    let alreadyInside = container.closest(tag);
+    if (alreadyInside && div.contains(alreadyInside)) {
+        sel.removeAllRanges();
+        return false;
     }
     const contents = range.extractContents();
-    const kom = document.createElement(komanda);
-    kom.appendChild(contents);
-    range.insertNode(kom);
+    const wrapper = document.createElement(tag);
+    wrapper.appendChild(contents);
+    range.insertNode(wrapper);
     sel.removeAllRanges();
+    return true;
 };
 
 
-let scenarijUloge = function (imeUloge) {
-    if (!imeUloge) return [];
-    const target = imeUloge.trim().toUpperCase();
+let imaLiZagrade = function (line) {
+    const t = line.trim();
+    return t.startsWith("(") && t.endsWith(")");
+}
+
+
+let sveVelikim = function (line) {
+    return /^[A-Z ]+$/.test(line.trim());
+}
+
+let daLiJeSceneHeading = function (line) {
+    const head = document.getElementById("scenehead");
+    const sceneTitleEl = head ? head.textContent.trim() : "";
+    if (!sceneTitleEl) return false;
+    return line.trim() === sceneTitleEl.textContent.trim();
+}
+
+
+let scenarijUloge = function (uloga) {
+    if (!uloga) return [];
+    const target = uloga.trim().toUpperCase();
+
     const text = div.innerHTML
         .replace(/<br\s*\/?>/gi, "\n")
         .replace(/\r\n/g, "\n")
         .replace(/\r/g, "\n")
         .replace(/\n+/g, "\n")
         .trim();
+
     const lines = text.split("\n");
-    const daLiJeSceneHeading = (line) => {
-        const t = line.trim();
-        if (t !== t.toUpperCase()) return false;
-        return /^(INT\.|EXT\.)\s.+\s-\s(DAY|NIGHT|MORNING|EVENING|AFTERNOON)$/.test(t);
-    };
-    const imaLiZagrade = (line) => {
-        const t = line.trim();
-        return t.startsWith("(") && t.endsWith(")");
-    };
-    const je_Uloga = (i) => {
+    const je_Uloga = function (i) {
         const line = lines[i] || "";
         const next = lines[i + 1] || "";
-        return jeUloga(line, next);  
+        return jeUloga(line, next);
     };
-    const sveVelikim = (line) => /^[A-Z ]+$/.test(line.trim());
-    let currentScene = "SCENE 1";
-    let sceneIndex = 0;
     let positionInScene = 0;
-    let dialogSegment = -1;
+    let dialogSegment = 0;
     let lastWasAction = true;
     const replicas = [];
     for (let i = 0; i < lines.length; i++) {
         let line = lines[i].trim();
-        if (daLiJeSceneHeading(line)) {
-            currentScene = line;
-            sceneIndex++;
-            positionInScene = 0;
-            dialogSegment++;
-            lastWasAction = true;
-            continue;
-        }
-        if (line.length === 0) {
-            continue;
-        }
+        if (line.length === 0) continue;
         if (je_Uloga(i)) {
-            const roleName = lines[i].trim();
+            const roleName = lines[i].trim().toUpperCase();
             if (lastWasAction) dialogSegment++;
             const block = [];
             let j = i + 1;
             for (; j < lines.length; j++) {
                 let l2 = lines[j].trim();
-                if (daLiJeSceneHeading(l2)) break;
-                if (je_Uloga(j)) break;
                 if (l2.length === 0) break;
+                if (je_Uloga(j)) break;
                 if (imaLiZagrade(l2)) continue;
                 if (sveVelikim(l2) && !je_Uloga(j)) break;
                 block.push(lines[j]);
@@ -299,21 +290,22 @@ let scenarijUloge = function (imeUloge) {
             if (block.length > 0) {
                 positionInScene++;
                 replicas.push({
-                    sceneIndex,
-                    sceneTitle: currentScene,
-                    positionInScene,
+                    dialogSegment: dialogSegment,
+                    positionInScene: positionInScene,
                     role: roleName,
-                    lines: block,
-                    dialogSegment
+                    lines: block
                 });
             }
+
             i = j - 1;
             lastWasAction = false;
             continue;
         }
-        if (imaLiZagrade(line)) continue;
-        lastWasAction = true;
+        if (!imaLiZagrade(line)) {
+            lastWasAction = true; 
+        }
     }
+
     const out = [];
     for (let k = 0; k < replicas.length; k++) {
         const r = replicas[k];
@@ -321,27 +313,24 @@ let scenarijUloge = function (imeUloge) {
         let prev = null;
         for (let p = k - 1; p >= 0; p--) {
             const cand = replicas[p];
-            if (cand.sceneIndex !== r.sceneIndex) break;
             if (cand.dialogSegment !== r.dialogSegment) break;
-            prev = {
-                uloga: cand.role,
-                linije: cand.lines.slice()
-            };
+            prev = { uloga: cand.role, linije: cand.lines.slice() };
             break;
         }
+
         let next = null;
         for (let n = k + 1; n < replicas.length; n++) {
             const cand = replicas[n];
-            if (cand.sceneIndex !== r.sceneIndex) break;
             if (cand.dialogSegment !== r.dialogSegment) break;
-            next = {
-                uloga: cand.role,
-                linije: cand.lines.slice()
-            };
+            next = { uloga: cand.role, linije: cand.lines.slice() };
             break;
         }
+        const head = document.getElementById("scenehead");
+    const sceneTitle = head ? head.textContent.trim() : "";
+
+
         out.push({
-            scena: r.sceneTitle,
+            scena: sceneTitle, // ili naziv koji znaš iz sidebara
             pozicijaUTekstu: r.positionInScene,
             prethodni: prev,
             trenutni: {
@@ -354,66 +343,129 @@ let scenarijUloge = function (imeUloge) {
     return out;
 };
 
+
 let grupisiUloge = function () {
-    const text = div.innerText
+    const text = div.innerHTML
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .replace(/\n+/g, "\n")
+        .trim();
+    if (!text) return [];
+    const lines = text.split("\n");
+    const head = document.getElementById("scenehead");
+    const sceneTitle = head ? head.textContent.trim() : "";
+    if (!sceneTitle) return [];
+    let dialogSegment = 0;
+    let lastSeparator = true;
+    const groups = [];
+    const groupIndex = {}; 
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
+        let next = lines[i + 1] || "";
+
+        if (line.length === 0) {
+            continue;
+        }
+
+        if (jeUloga(line, next)) {
+            const roleName = line.trim().toUpperCase();
+            let j = i + 1;
+            let imaGovora = false;
+            for (; j < lines.length; j++) {
+                let l2 = lines[j].trim();
+                let next2 = lines[j + 1] || "";
+                if (l2.length === 0) break;      
+                if (jeUloga(l2, next2)) break;
+                if (imaLiZagrade(l2)) continue;       
+                if (sveVelikim(l2) && !jeUloga(l2, next2)) break;
+                imaGovora = true;
+            }
+            if (!imaGovora) {
+                i = j - 1;
+                lastSeparator = true;
+                continue;
+            }
+            if (lastSeparator) {
+                dialogSegment++;
+            }
+            if (dialogSegment > 0) {
+                const key = dialogSegment;
+                if (!groupIndex.hasOwnProperty(key)) {
+                    groupIndex[key] = groups.length;
+                    groups.push({
+                        scena: sceneTitle,
+                        segment: dialogSegment,
+                        uloge: []
+                    });
+                }
+                const g = groups[groupIndex[key]];
+                if (!g.uloge.includes(roleName)) {
+                    g.uloge.push(roleName);
+                }
+            }
+            lastSeparator = false;
+            i = j - 1;
+            continue;
+        }
+        if (!imaLiZagrade(line)) {
+            lastSeparator = true;
+        }
+    }
+    return groups;
+};
+
+
+
+let brojLinijaTeksta = function (uloga) {
+    if (!uloga) return 0;
+    const target = uloga.trim().toUpperCase();
+    const text = div.innerHTML
+        .replace(/<br\s*\/?>/gi, "\n")
         .replace(/\r\n/g, "\n")
         .replace(/\r/g, "\n")
         .replace(/\n+/g, "\n")
         .trim();
 
-    if (!text) return [];
-    const lines = text.split("\n").map(l => l.trim());
-    if (lines.length === 0) return [];
-    const sceneTitle = lines[0];
-    const replicas = [];
-    const je_UlogaLine = (idx) => {
-        const line = lines[idx] || "";
-        const next = lines[idx + 1] || "";
-        return jeUloga(line, next);
-    };
-    for (let i = 1; i < lines.length; i++) {
-        if (!je_UlogaLine(i)) continue;
-        const roleName = lines[i]; 
-        const speechLines = [];
+    const lines = text.split("\n");
+    let total = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
+
+        if (!jeUloga(line, lines[i + 1] || "")) continue;
+
+        const roleName = line.trim().toUpperCase();
+        const jeTrazeniLik = (roleName === target);
+
         let j = i + 1;
         for (; j < lines.length; j++) {
-            const l2 = lines[j];
-            const t2 = l2.trim();
-            if (t2.length === 0) break;    
-            if (je_UlogaLine(j)) break;        
-            speechLines.push(l2);
-        }
-        if (speechLines.length > 0) {
-            replicas.push({
-                role: roleName,
-                lines: speechLines
-            });
+            let l2 = lines[j].trim();
+
+            if (l2.length === 0) break; 
+            if (daLiJeSceneHeading(l2)) break; 
+            if (jeUloga(lines[j], lines[j + 1] || "")) break;
+
+            if (imaLiZagrade(l2)) continue;
+
+            if (sveVelikim(l2) && !jeUloga(lines[j], lines[j + 1] || "")) break;
+
+            if (jeTrazeniLik) {
+                total++;
+            }
         }
         i = j - 1;
     }
-    if (replicas.length === 0) {
-        return [];
-    }
-    const seenRoles = [];
-    for (const r of replicas) {
-        if (!seenRoles.includes(r.role)) {
-            seenRoles.push(r.role);
-        }
-    }
-    return [
-        {
-            scena: sceneTitle,
-            segment: 1,
-            uloge: seenRoles
-        }
-    ];
+
+    return total;
 };
+
 
      return {
         dajBrojRijeci: dajBrojRijeci,
         dajUloge: dajUloge,
         pogresnaUloga: pogresnaUloga,
-        brojiReplike: brojiReplike,     
+        brojLinijaTeksta: brojLinijaTeksta,  
         formatirajTekst: formatirajTekst,
         scenarijUloge: scenarijUloge,
         grupisiUloge: grupisiUloge
