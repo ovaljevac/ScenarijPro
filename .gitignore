@@ -46,5 +46,28 @@ Thumbs.db
 *.avi
 *.flv
 *.mov
+
+
+
 *.wmv
+
+
+# node deps
+node_modules/
+
+# runtime scenariji - ignoriši sve JSON fajlove u folderu
+data/scenarios/*.json
+
+# ali ne ignoriši sam folder
+!data/scenarios/
+
+# deltas.json ignoriraj ako će aplikacija pisati u njega
+# (ako želiš da ostane PRAZAN i verzioniran, onda ovo NEMOJ stavljati!)
+# data/deltas.json
+
+# ostalo
+.DS_Store
+.vscode/
+.idea/
+*.log
 

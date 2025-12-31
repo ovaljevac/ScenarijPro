@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
     <script src="../js/EditorTeksta.js"></script>
+    <script src="../js/PoziviAjaxFetch.js"></script>
     <script src="../js/editor.js"></script>
     <title>Scene</title>
 </head>
@@ -57,6 +58,7 @@
     <div id="outputScenarij"></div>
     <div id="outputGrupe"></div>
     <div id="outputPogresneUloge"></div>
+    <div id="outputLinije"></div>
 </div>
         </div>
 
@@ -91,6 +93,26 @@
                     Pogresne uloge
                 </button>
             </div>
+        
+        <div id="wt-collab-panel" class="wt-collab-panel">
+            <div class="wt-row">
+                <label>User ID <input id="wtUserId" type="number" min="1" value="1"></label>
+                <label>Scenario ID <input id="wtScenarioId" type="number" min="1" value="1"></label>
+                <label>Title <input id="wtScenarioTitle" type="text" placeholder="Naslov scenarija"></label>
+                <button id="wtCreateScenario" type="button">Create</button>
+                <button id="wtLoadScenario" type="button">Load</button>
+            </div>
+            <div class="wt-row">
+                <label>Old name <input id="wtOldName" type="text" placeholder="ALICE"></label>
+                <label>New name <input id="wtNewName" type="text" placeholder="ALICIA"></label>
+                <button id="wtRenameCharacter" type="button">Rename character</button>
+                <span id="wtStatus" class="wt-status"></span>
+            </div>
+            <div class="wt-row wt-hint">
+                Klik na liniju → lock. Enter ili izlazak iz linije → update. Deltas se povlače periodično.
+            </div>
+        </div>
+        
         <div class="editor" contenteditable="true" id="divEditor">
             <h2 class="scene-heading" id="scenehead">INT. STARSHIP BRIDGE - NIGHT</h2>
             <p>
