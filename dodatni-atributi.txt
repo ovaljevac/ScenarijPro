@@ -1,0 +1,1 @@
+Scenario.baseContent - pocetno stanje scenarija nakon kreiranja (JSON niz linija) koristi se za /restore/:checkpointId da bi se scenario rekonstruisao primjenom delti do zadatog checkpointa.

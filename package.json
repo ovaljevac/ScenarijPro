@@ -1,0 +1,27 @@
+{
+  "name": "spirala-4",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://ovaljevac1-admin@bitbucket.org/ovaljevac1/wt26p19472.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://bitbucket.org/ovaljevac1/wt26p19472/issues"
+  },
+  "homepage": "https://bitbucket.org/ovaljevac1/wt26p19472#readme",
+  "dependencies": {
+    "express": "5.2.1",
+    "sequelize": "^6.37.0",
+    "mysql2": "^3.11.0"
+  }
+}
