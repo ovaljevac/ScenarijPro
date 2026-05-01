@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/login.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="../js/PoziviAjaxFetch.js"></script>
+    <script src="../js/auth.js"></script>
+    <title>ScenarijPro prijava</title>
+</head>
+<body>
+    <main class="auth-shell">
+        <section class="auth-panel">
+            <a class="back-link" href="projects.html">Nazad na projekte</a>
+            <h1>ScenarijPro</h1>
+            <p class="subtitle">Prijavi se ili registruj racun za svoje scenarije.</p>
+
+            <div class="tabs">
+                <button class="tab active" data-auth-tab="login" type="button">Prijava</button>
+                <button class="tab" data-auth-tab="register" type="button">Registracija</button>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+                <label>Email
+                    <input id="loginEmail" type="email" autocomplete="email" required>
+                </label>
+                <label>Sifra
+                    <input id="loginPassword" type="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit">Prijavi se</button>
+            </form>
+
+            <form id="registerForm" class="auth-form hidden">
+                <div class="form-row">
+                    <label>Ime
+                        <input id="registerFirstName" type="text" autocomplete="given-name" required>
+                    </label>
+                    <label>Prezime
+                        <input id="registerLastName" type="text" autocomplete="family-name" required>
+                    </label>
+                </div>
+                <label>Email
+                    <input id="registerEmail" type="email" autocomplete="email" required>
+                </label>
+                <label>Sifra
+                    <input id="registerPassword" type="password" autocomplete="new-password" required>
+                </label>
+                <small class="hint">Najmanje 8 znakova, veliko i malo slovo, broj i specijalni znak.</small>
+                <button type="submit">Registruj se</button>
+            </form>
+
+            <p id="authStatus" class="status"></p>
+        </section>
+    </main>
+</body>
+</html>

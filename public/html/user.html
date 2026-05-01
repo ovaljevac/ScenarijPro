@@ -5,22 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/user.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <title>Korisničke postavke</title>
+    <script src="../js/PoziviAjaxFetch.js"></script>
+    <script src="../js/user-settings.js"></script>
+    <title>Korisnicke postavke</title>
 </head>
 <body>
     <div class="user-form">
-        <h1 class="user-form-title">Postavke korisničkog računa</h1>
+        <h1 class="user-form-title">Postavke korisnickog racuna</h1>
         <hr class="divider"/>
-        <p class="subtitle">Upravljajte vašim korisničkim računom, sigurnosnim postavkama i notifikacijama</p>
+        <p class="subtitle">Upravljajte vasim korisnickim racunom, sigurnosnim postavkama i notifikacijama</p>
         <div class="user-info">
-            <h2 class="section-title">Podaci o korisničkom računu</h2>
+            <h2 class="section-title">Podaci o korisnickom racunu</h2>
             <div class="form-row">
-                <label class="field-label" for="fullName">Ime i Prezime</label>
-                <input class="input-field" type="text" placeholder="Tadej Pogačar"/>
+                <label class="field-label" for="firstName">Ime</label>
+                <input id="firstName" class="input-field" type="text" placeholder="Tadej"/>
+            </div>
+            <div class="form-row">
+                <label class="field-label" for="lastName">Prezime</label>
+                <input id="lastName" class="input-field" type="text" placeholder="Pogacar"/>
             </div>
             <div class="form-row">
                 <label class="field-label" for="email">Email adresa</label>
-                <input class="input-field" type="text" placeholder="tamaupogi@gmail.com"/>
+                <input id="email" class="input-field" type="email" placeholder="tamaupogi@gmail.com"/>
             </div>
             <div class="form-row">
                 <label class="field-label" for="items">Broj elemenata po stranici (1-100)</label>
@@ -30,19 +36,19 @@
         <div class="user-info security-settings">
             <h2 class="section-title security-title">Sigurnosne postavke</h2>
             <div class="form-row">
-                <label class="field-label" for="password">Nova šifra</label>
+                <label class="field-label" for="password">Nova sifra</label>
                 <input type="password" id="password" class="input-field red-border" placeholder="********"/>
             </div>
-            <small class="hint">Ostavite prazno da zadržite trenutnu šifru.</small>
+            <small class="hint">Ostavite prazno da zadrzite trenutnu sifru. Nova sifra se sprema heširana u bazu.</small>
             <div class="checkbox-field">
                 <input type="checkbox" id="2fa" />
-                <label for="2fa">Omogući Two-Factor Authentication (2FA)</label>
+                <label for="2fa">Omoguci Two-Factor Authentication (2FA)</label>
             </div>
         </div>
         <div class="user-info notifications">
             <h2 class="section-title notification-title">Notifikacije</h2>
             <div class="form-row">
-                <label class="field-label">Preferirani način komunikacije</label>
+                <label class="field-label">Preferirani nacin komunikacije</label>
                 <div class="radio-group">
                     <label><input type="radio" name="contact" value="email" checked> Email</label>
                     <label><input type="radio" name="contact" value="sms"> SMS</label>
@@ -50,18 +56,19 @@
                 </div>
             </div>
             <div class="form-row">
-                <label class="field-label" for="frequency">Notification frequency</label>
+                <label class="field-label" for="frequency">Ucestalost notifikacija</label>
                 <select id="frequency" class="input-field green-border">
-                    <option selected>Daily</option>
-                    <option>Weekly</option>
-                    <option>Monthly</option>
-                    <option>Never</option>
+                    <option value="daily" selected>Dnevno</option>
+                    <option value="weekly">Sedmicno</option>
+                    <option value="monthly">Mjesecno</option>
+                    <option value="never">Nikad</option>
                 </select>
             </div>
         </div>
-        <hr/ class="divider gray-div">
+        <hr class="divider gray-div"/>
         <div class="user-info btn">
-        <button class="save-btn">Spasi promjene</button>
+            <button id="saveSettingsBtn" class="save-btn">Spasi promjene</button>
+            <p id="settingsStatus" class="settings-status"></p>
         </div>
     </div>
 </body>

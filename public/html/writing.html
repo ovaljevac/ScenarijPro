@@ -5,239 +5,260 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="../css/writing.css">
+    <link rel="stylesheet" href="../css/modal.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
     <script src="../js/EditorTeksta.js"></script>
     <script src="../js/PoziviAjaxFetch.js"></script>
+    <script src="../js/ui-modal.js"></script>
     <script src="../js/editor.js"></script>
-    <title>Scene</title>
+    <title>Pisanje scenarija</title>
 </head>
 <body>
     <div class="header">
         <div class="header-title">
-            <button class="back-button">
+            <a class="back-button" href="projects.html" aria-label="Nazad na projekte">
                 <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div>
+                <p class="eyebrow">Editor</p>
+                <h2>THE LAST STARSHIP <span>Draft 2</span></h2>
+            </div>
+        </div>
+        <div class="actions line-type-tools" aria-label="Tipovi linija">
+            <button class="btn line-type-btn" data-line-type="scene" type="button" title="Formatiraj liniju kao scenu">
+                <i class="fa-solid fa-clapperboard"></i>
+                Scena
             </button>
-            <h2>THE LAST STARSHIP (Draft 2)</h2>
+            <button class="btn line-type-btn" data-line-type="action" type="button" title="Formatiraj liniju kao akciju">
+                <i class="fa-solid fa-align-left"></i>
+                Akcija
+            </button>
+            <button class="btn line-type-btn" data-line-type="character" type="button" title="Formatiraj liniju kao lik">
+                <i class="fa-solid fa-user"></i>
+                Lik
+            </button>
+            <button class="btn line-type-btn" data-line-type="dialogue" type="button" title="Formatiraj liniju kao dijalog">
+                <i class="fa-solid fa-comment"></i>
+                Dijalog
+            </button>
         </div>
-        <div class="actions">
-            <button class="btn">SCENA</button>
-            <button class="btn">AKcIJA</button>
-            <button class="btn">LIK</button>
-            <button class="btn">DIJALOG</button>
-        </div>
-        <button class="save-btn btn">SPASI</button>
+        <button class="save-btn btn">
+            <i class="fa-regular fa-floppy-disk"></i>
+            Spasi
+        </button>
     </div>
+
     <div class="main-page">
-        <div class="sidebar">
-            <h3 class="sidebar-title">Scene (3)</h3>
+        <aside class="sidebar">
+            <h3 class="sidebar-title">Scene</h3>
             <ul class="scene-list">
                 <li class="scene-item active">
                     <span class="scene-title">1. INT. STARSHIP BRIDGE - NIGHT</span>
-                    <span class="scene-pages">(5/8)</span>
+                    <span class="scene-pages">5/8 str.</span>
                 </li>
                 <li class="scene-item">
                     <span class="scene-title">2. EXT. ASTEROID FIELD - DAY</span>
-                    <span class="scene-pages">(3/8)</span>
+                    <span class="scene-pages">3/8 str.</span>
                 </li>
                 <li class="scene-item">
                     <span class="scene-title">3. INT. ENGINE ROOM - NIGHT</span>
-                    <span class="scene-pages">(2/8)</span>
+                    <span class="scene-pages">2/8 str.</span>
                 </li>
             </ul>
             <hr class="divider"/>
-           <div id="poruke">
+            <div id="poruke" class="inspector">
+                <h3 class="sidebar-title">Analiza</h3>
                 <ul class="statistics">
-                    <li>Ukupan broj riječi: </li>
-                    <li>Broj boldiranih riječi: </li>
-                    <li>Broj italic riječi: </li>
-                    <li>Broj podvučenih riječi: </li>
+                    <li>Ukupan broj rijeci: </li>
+                    <li>Broj boldiranih rijeci: </li>
+                    <li>Broj italic rijeci: </li>
+                    <li>Broj podvucenih rijeci: </li>
                 </ul>
-
-    <div id="outputUloge"></div>
-    <div id="outputScenarij"></div>
-    <div id="outputGrupe"></div>
-    <div id="outputPogresneUloge"></div>
-    <div id="outputLinije"></div>
-</div>
-        </div>
-
-        <div class="right-side">
-            <div class="format-buttons">
-                <button id="btnWords" class="btn format">
-                    Broj Rijeci
-                </button>
-                <button id="btnBold" class="btn format">
-                    Bold
-                </button>
-
-                <button id="btnItalic" class="btn format">
-                    ITalic
-                </button>
-                <button id="btnUnderline" class="btn format">
-                    Underline
-                </button>
-                <button id="btnDajUloge" class="btn format">
-                    Uloge
-                </button>
-                <button id="btnScenarijUloge" class="btn format">
-                    Scenarij uloge
-                </button>
-                <button id="btnGrupisiUloge" class="btn format">
-                    Grupisane uloge
-                </button>
-                <button id="btnLinijeUloge" class="btn format">
-                    Linije uloge
-                </button>
-                <button id="btnPogresneUloge" class="btn format">
-                    Pogresne uloge
-                </button>
+                <div id="outputUloge" class="output"></div>
+                <div id="outputScenarij" class="output"></div>
+                <div id="outputGrupe" class="output"></div>
+                <div id="outputPogresneUloge" class="output"></div>
+                <div id="outputLinije" class="output"></div>
             </div>
-        
-        <div id="wt-collab-panel" class="wt-collab-panel">
-            <div class="wt-row">
-                <label>User ID <input id="wtUserId" type="number" min="1" value="1"></label>
-                <label>Scenario ID <input id="wtScenarioId" type="number" min="1" value="1"></label>
-                <label>Title <input id="wtScenarioTitle" type="text" placeholder="Naslov scenarija"></label>
-                <button id="wtCreateScenario" type="button">Create</button>
-                <button id="wtLoadScenario" type="button">Load</button>
+        </aside>
+
+        <main class="right-side">
+            <div class="format-buttons" aria-label="Alati za tekst">
+                <div class="tool-group">
+                    <button id="btnBold" class="btn format icon-btn" title="Bold" type="button">
+                        <i class="fa-solid fa-bold"></i>
+                    </button>
+                    <button id="btnItalic" class="btn format icon-btn" title="Italic" type="button">
+                        <i class="fa-solid fa-italic"></i>
+                    </button>
+                    <button id="btnUnderline" class="btn format icon-btn" title="Underline" type="button">
+                        <i class="fa-solid fa-underline"></i>
+                    </button>
+                </div>
+                <div class="tool-group analysis-tools">
+                    <button id="btnWords" class="btn format" title="Osvjezi broj rijeci" type="button">
+                        <i class="fa-solid fa-list-ol"></i>
+                        <span>Rijeci</span>
+                    </button>
+                    <button id="btnDajUloge" class="btn format" type="button">Uloge</button>
+                    <button id="btnPogresneUloge" class="btn format" type="button">Greske</button>
+                    <button id="btnLinijeUloge" class="btn format" type="button">Linije</button>
+                    <button id="btnGrupisiUloge" class="btn format" type="button">Grupe</button>
+                    <button id="btnScenarijUloge" class="btn format" type="button">Kontekst</button>
+                </div>
             </div>
-            <div class="wt-row">
-                <label>Old name <input id="wtOldName" type="text" placeholder="ALICE"></label>
-                <label>New name <input id="wtNewName" type="text" placeholder="ALICIA"></label>
-                <button id="wtRenameCharacter" type="button">Rename character</button>
-                <span id="wtStatus" class="wt-status"></span>
+
+            <div class="editor" contenteditable="true" id="divEditor">
+                <h2 class="scene-heading" id="scenehead">INT. STARSHIP BRIDGE - NIGHT</h2>
+                <p>
+                    The vast, grey SILENCE of the moon. Dust motes hang impossibly still in the weak light.<br><br>
+
+                    KIRA<br>
+                    I can't keep pretending everything is fine.<br><br>
+
+                    KIRA<br>
+                    You all hear it too, don't you? The ship groaning.<br><br>
+
+                    KIRA<br>
+                    Every time we jump it feels like bones cracking.<br><br>
+
+                    KIRA<br>
+                    One more jump and we might not come back.<br><br>
+
+                    KIRAA<br>
+                    Or maybe we already didn't, and this is what's left of us.<br><br>
+
+                    TIM<br>
+                    I rerouted power from the cargo bay. No one noticed... yet.<br><br>
+
+                    TIM<br>
+                    Don't worry, I left enough juice for the freezers.<br><br>
+
+                    TIM<br>
+                    If someone complains, I'll say it was a calibration error.<br><br>
+
+                    TIM<br>
+                    We're alive because of ugly fixes, not pretty systems.<br><br>
+
+                    TIM<br>
+                    Captain, I can squeeze one more boost out of the core.<br><br>
+
+                    TIN<br>
+                    Or it explodes and we become a new constellation.<br><br>
+
+                    TLM<br>
+                    Either way, at least it'll be spectacular.<br><br>
+
+                    NAVIGATOR<br>
+                    Incoming transmission on all channels.<br><br>
+
+                    NAVIGATOR<br>
+                    Trajectory curves are tightening around us.<br><br>
+
+                    NAVIGATOR<br>
+                    If we stay on this course, we meet them head-on.<br><br>
+
+                    NAVIGATOR<br>
+                    If we change course, we dive into the debris field. 123 234<br><br>
+
+                    NAVIGATOR<br>
+                    I can plot both, but I can't promise survival for either.<br><br>
+
+                    NAVIGATOR<br>
+                    Captain, say the word and I'll lock in a path.<br><br>
+
+                    NAVIGATER<br>
+                    Just don't ask me for a safe one.<br><br>
+
+                    NAVGIATOR<br>
+                    Safe stopped being an option three jumps ago.<br><br>
+
+                    ENGINEER<br>
+                    Reactor output is dropping faster than expected.<br><br>
+
+                    ENGINEER<br>
+                    Half the conduits are held together by hope and tape.<br><br>
+
+                    ENGINEER<br>
+                    If we push harder, something important will melt.<br><br>
+
+                    ENGINEER<br>
+                    If we don't push, something important will crash into us.<br><br>
+
+                    ENGINER<br>
+                    Either way, the math doesn't like us.<br><br>
+
+                    ENGINNER<br>
+                    But I've seen worse machines crawl another mile.<br><br>
+
+                    DOCTOR LENA<br>
+                    I can't patch up exhaustion with a bandage, Captain.<br><br>
+
+                    DOCTOR LENA<br>
+                    These people need sleep, not more stims.<br><br>
+
+                    DOCTOR LENA<br>
+                    Hearts don't recharge like batteries.<br><br>
+
+                    DOCTOR LENA<br>
+                    If we keep this pace, someone will collapse on their feet.<br><br>
+
+                    DOCTOR LENO<br>
+                    Still, I'll do what I can with what I have.<br><br>
+
+                    PILOT<br>
+                    Controls are sluggish, like we're flying through mud.<br><br>
+
+                    PILOT<br>
+                    One wrong twitch and we'll scrape the hull clean off.<br><br>
+
+                    PILOT<br>
+                    I've got three alarms blinking and I'm ignoring all of them.<br><br>
+
+                    PLIOT<br>
+                    If this works, I'm demanding a raise and a therapist.<br><br>
+
+                    SECURITY<br>
+                    All blast doors are sealed. No one in or out.<br><br>
+
+                    SECURITY<br>
+                    Internal cams show stress, not mutiny. Yet.<br><br>
+
+                    OBSERVER<br>
+                    From up here, you all look so small and fragile.<br><br>
+
+                    OBSERVER<br>
+                    And somehow still louder than the engines.<br><br>
+                </p>
             </div>
-            <div class="wt-row wt-hint">
-                Klik na liniju → lock. Enter ili izlazak iz linije → update. Deltas se povlače periodično.
-            </div>
-        </div>
-        
-        <div class="editor" contenteditable="true" id="divEditor">
-            <h2 class="scene-heading" id="scenehead">INT. STARSHIP BRIDGE - NIGHT</h2>
-            <p>
-                The vast, grey SILENCE of the moon. Dust motes hang impossibly still in the weak light.<br><br>
 
-                KIRA<br>
-                I can't keep pretending everything is fine.<br><br>
-
-                KIRA<br>
-                You all hear it too, don't you? The ship groaning.<br><br>
-
-                KIRA<br>
-                Every time we jump it feels like bones cracking.<br><br>
-
-                KIRA<br>
-                One more jump and we might not come back.<br><br>
-
-                KIRAA<br>
-                Or maybe we already didn't, and this is what's left of us.<br><br>
-
-                TIM<br>
-                I rerouted power from the cargo bay. No one noticed… yet.<br><br>
-
-                TIM<br>
-                Don't worry, I left enough juice for the freezers.<br><br>
-
-                TIM<br>
-                If someone complains, I'll say it was a calibration error.<br><br>
-
-                TIM<br>
-                We're alive because of ugly fixes, not pretty systems.<br><br>
-
-                TIM<br>
-                Captain, I can squeeze one more boost out of the core.<br><br>
-
-                TIN<br>
-                Or it explodes and we become a new constellation.<br><br>
-
-                TLM<br>
-                Either way, at least it'll be spectacular.<br><br>
-
-                NAVIGATOR<br>
-                Incoming transmission on all channels.<br><br>
-
-                NAVIGATOR<br>
-                Trajectory curves are tightening around us.<br><br>
-
-                NAVIGATOR<br>
-                If we stay on this course, we meet them head-on.<br><br>
-
-                NAVIGATOR<br>
-                If we change course, we dive into the debris field. 123 234<br><br>
-
-                NAVIGATOR<br>
-                I can plot both, but I can't promise survival for either.<br><br>
-
-                NAVIGATOR<br>
-                Captain, say the word and I'll lock in a path.<br><br>
-
-                NAVIGATER<br>
-                Just don’t ask me for a safe one.<br><br>
-
-                NAVGIATOR<br>
-                Safe stopped being an option three jumps ago.<br><br>
-
-                ENGINEER<br>
-                Reactor output is dropping faster than expected.<br><br>
-
-                ENGINEER<br>
-                Half the conduits are held together by hope and tape.<br><br>
-
-                ENGINEER<br>
-                If we push harder, something important will melt.<br><br>
-
-                ENGINEER<br>
-                If we don't push, something important will crash into us.<br><br>
-
-                ENGINER<br>
-                Either way, the math doesn't like us.<br><br>
-
-                ENGINNER<br>
-                But I've seen worse machines crawl another mile.<br><br>
-
-                DOCTOR LENA<br>
-                I can't patch up exhaustion with a bandage, Captain.<br><br>
-
-                DOCTOR LENA<br>
-                These people need sleep, not more stims.<br><br>
-
-                DOCTOR LENA<br>
-                Hearts don't recharge like batteries.<br><br>
-
-                DOCTOR LENA<br>
-                If we keep this pace, someone will collapse on their feet.<br><br>
-
-                DOCTOR LENO<br>
-                Still, I'll do what I can with what I have.<br><br>
-
-                PILOT<br>
-                Controls are sluggish, like we're flying through mud.<br><br>
-
-                PILOT<br>
-                One wrong twitch and we'll scrape the hull clean off.<br><br>
-
-                PILOT<br>
-                I've got three alarms blinking and I'm ignoring all of them.<br><br>
-
-                PLIOT<br>
-                If this works, I'm demanding a raise and a therapist.<br><br>
-
-                SECURITY<br>
-                All blast doors are sealed. No one in or out.<br><br>
-
-                SECURITY<br>
-                Internal cams show stress, not mutiny. Yet.<br><br>
-
-                OBSERVER<br>
-                From up here, you all look so small and fragile.<br><br>
-
-                OBSERVER<br>
-                And somehow still louder than the engines.<br><br>
-            </p>
-        </div>
+            <details id="wt-collab-panel" class="wt-collab-panel">
+                <summary class="wt-panel-title">
+                    <span>Sync i baza</span>
+                    <span id="wtStatus" class="wt-status"></span>
+                </summary>
+                <div class="wt-row">
+                    <label>User ID <input id="wtUserId" type="number" min="1" value="1"></label>
+                    <label>Scenario ID <input id="wtScenarioId" type="number" min="1" value="1"></label>
+                    <label>Naslov <input id="wtScenarioTitle" type="text" placeholder="Naslov scenarija"></label>
+                    <button id="wtCreateScenario" type="button">Kreiraj</button>
+                    <button id="wtLoadScenario" type="button">Ucitaj</button>
+                </div>
+                <div class="wt-row">
+                    <label>Staro ime <input id="wtOldName" type="text" placeholder="ALICE"></label>
+                    <label>Novo ime <input id="wtNewName" type="text" placeholder="ALICIA"></label>
+                    <button id="wtRenameCharacter" type="button">Preimenuj lik</button>
+                </div>
+                <div class="wt-row">
+                    <label>Dodijeli korisniku <input id="wtAssignEmail" type="email" placeholder="email@primjer.com"></label>
+                    <button id="wtAssignScenario" type="button">Dodijeli scenario</button>
+                </div>
+                <div class="wt-row wt-hint">
+                    Klik na liniju zakljucava tekst. Enter ili izlazak iz linije sprema promjenu.
+                </div>
+            </details>
+        </main>
     </div>
-
-</div>
 </body>
 </html>

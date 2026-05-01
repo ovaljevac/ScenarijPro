@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/projects.css">
+    <link rel="stylesheet" href="../css/modal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="../js/PoziviAjaxFetch.js"></script>
+    <script src="../js/ui-modal.js"></script>
+    <script src="../js/projects.js"></script>
 
     <title>ScenarijPro</title>
 </head>
@@ -13,68 +17,41 @@
     <div class="container">
     <div class="nav-container">
         <h2 class="title">ScenarijPro</h2>
-        <a href="#" class="active"><i class="fa-regular fa-folder"></i>Projekti</a>
-        <a href="#"><i class="fa-solid fa-chart-column"></i>Statistike</a>
-        <a href="#"><i class="fa-solid fa-gear"></i>Postavke</a>
+        <a href="projects.html" class="active"><i class="fa-regular fa-folder"></i>Projekti</a>
+        <a href="writing.html"><i class="fa-solid fa-pen-nib"></i>Pisanje</a>
+        <a href="user.html"><i class="fa-solid fa-gear"></i>Postavke</a>
         <hr />
         <div class="user-card">
             <div class="avatar">U</div>
             <div class="user-info">
-                <p class="name">Alex Writer</p>
-                <p class="role">Pro Member</p>
+                <p class="name" id="navUserName">Gost</p>
+                <p class="role" id="navUserRole">Niste prijavljeni</p>
             </div>
+        </div>
+        <div class="auth-actions">
+            <a id="loginBtn" class="secondary-btn" href="login.html">Prijava</a>
+            <a id="registerBtn" class="secondary-btn" href="login.html?mode=register">Registracija</a>
+            <button id="logoutBtn" class="secondary-btn logout-btn" type="button" hidden>Odjavi se</button>
         </div>
     </div>
     <div class="main-menu">
         <div class="header">
             <h1 class="header-title">Svi scenariji</h1>
             <div class="actions">
-                <input class="search-input" type="text" placeholder="Pretraga">
-                <button class="primary-btn">+ Novi projekat</button>
+                <input id="projectSearch" class="search-input" type="text" placeholder="Pretraga">
+                <button id="createProjectBtn" class="primary-btn" type="button">+ Novi projekat</button>
             </div>
         </div>
         
-        <div class="cards-grid">
-            <div class="active-card card">
-                <div class="card-head">
-                    <h3 class="card-title">THE LAST STARSHIP</h3>
-                    <span class="badge">Aktivan</span>
-                </div>
-            <p class="subtitle">Sci-Fi Feature Film</p>
-            <ul class="meta">
-                <li><strong>Status:</strong> Second Draft</li>
-                <li><strong>Broj Stranica:</strong> 105</li>
-                <li><strong>Vrijeme posljednje izmjene:</strong> 2 hours ago</li>
-            </ul>
-            </div>
-
-            <div class="card">
-                <h3 class="card-title">A Town Called Quiet</h3>
-                <p class="subtitle">Mystery TV Pilot (45 min)</p>
-                <ul class="meta">
-                    <li><strong>Status:</strong> Outline Complete</li>
-                    <li><strong>Broj Stranica:</strong> 12</li>
-                    <li><strong>Vrijeme posljednje izmjene:</strong> Yesterday</li>
-                </ul>
-            </div>
-
-            <div class="card">
-                <h3 class="card-title">The Architect's Secret</h3>
-                <p class="subtitle">Thriller Short Film</p>
-                <ul class="meta">
-                    <li><strong>Status:</strong> Final Polish</li>
-                    <li><strong>Broj Stranica:</strong> 28</li>
-                    <li><strong>Vrijeme posljednje izmjene:</strong> 3 weeks ago</li>
-                </ul>
-            </div>
-
-            <div class="card add-card">
+        <div id="projectsStatus" class="projects-status">Ucitavanje projekata...</div>
+        <div id="projectsGrid" class="cards-grid">
+            <button id="createProjectCard" class="card add-card" type="button">
                 <div class="add-inner">
                    <i class="fa-regular fa-pen-to-square add-icon"></i>
 
                         <div>Kreiraj novi scenarij</div>
                     </div>
-            </div>
+            </button>
         </div>
     </div>
 </body>

@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "check": "node --check server.js && node --check db.js && node --check config/env.js",
+    "test": "npm run check",
     "start": "node server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://ovaljevac1-admin@bitbucket.org/ovaljevac1/wt26p19472.git"
+    "url": "git+https://bitbucket.org/ovaljevac1/wt26p19472.git"
   },
   "keywords": [],
   "author": "",

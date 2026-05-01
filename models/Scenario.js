@@ -6,6 +6,7 @@ export const Scenario = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     title: { type: DataTypes.STRING, allowNull: false },
+    ownerId: { type: DataTypes.INTEGER, allowNull: true },
     // Dodatni atribut: pocetno stanje scenarija nakon kreiranja (za restore)
     baseContent: { type: DataTypes.TEXT("long"), allowNull: false },
   },
