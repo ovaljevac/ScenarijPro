@@ -36,6 +36,22 @@ window.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function clearOutput(element) {
+        while (element.firstChild) element.removeChild(element.firstChild);
+    }
+
+    function appendStrongLine(element, text) {
+        const strong = document.createElement("strong");
+        strong.textContent = text;
+        element.appendChild(strong);
+        element.appendChild(document.createElement("br"));
+    }
+
+    function appendTextLine(element, text) {
+        element.appendChild(document.createTextNode(text));
+        element.appendChild(document.createElement("br"));
+    }
+
     async function prikaziScenarijUloge() {
         if (!outputScenarij) {
             return;
@@ -58,29 +74,30 @@ window.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        let html = "<strong>Scenarij za ulogu " + ime.toUpperCase() + ":</strong><br>";
+        clearOutput(outputScenarij);
+        appendStrongLine(outputScenarij, "Scenarij za ulogu " + ime.toUpperCase() + ":");
         scenariji.forEach((s, index) => {
-            html +=
-                "<div style='margin-top:6px;'>" +
+            const block = document.createElement("div");
+            block.style.marginTop = "6px";
+            appendTextLine(
+                block,
                 "Pojavljivanje #" + (index + 1) +
-                " | Scena: " + (s.scena || "(bez scene)") +
-                " | Pozicija u tekstu: " + s.pozicijaUTekstu +
-                "<br>";
+                    " | Scena: " + (s.scena || "(bez scene)") +
+                    " | Pozicija u tekstu: " + s.pozicijaUTekstu
+            );
             if (s.prethodni) {
-                html += "Prethodni: " + s.prethodni.uloga + " - " + s.prethodni.linije.join(" ") + "<br>";
+                appendTextLine(block, "Prethodni: " + s.prethodni.uloga + " - " + s.prethodni.linije.join(" "));
             } else {
-                html += "Prethodni: (nema)<br>";
+                appendTextLine(block, "Prethodni: (nema)");
             }
-            html += "Trenutni: " + s.trenutni.uloga + " - " + s.trenutni.linije.join(" ") + "<br>";
+            appendTextLine(block, "Trenutni: " + s.trenutni.uloga + " - " + s.trenutni.linije.join(" "));
             if (s.sljedeci) {
-                html += "Sljedeci: " + s.sljedeci.uloga + " - " + s.sljedeci.linije.join(" ") + "<br>";
+                appendTextLine(block, "Sljedeci: " + s.sljedeci.uloga + " - " + s.sljedeci.linije.join(" "));
             } else {
-                html += "Sljedeci: (nema)<br>";
+                appendTextLine(block, "Sljedeci: (nema)");
             }
-            html += "</div>";
+            outputScenarij.appendChild(block);
         });
-
-        outputScenarij.innerHTML = html;
     }
 
     function prikaziGrupe() {
@@ -93,17 +110,15 @@ window.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        let html = "<strong>Grupe uloga po scenama i segmentima:</strong><br>";
+        clearOutput(outputGrupe);
+        appendStrongLine(outputGrupe, "Grupe uloga po scenama i segmentima:");
         grupe.forEach(g => {
-            html +=
-                "<div style='margin-top:6px;'>" +
-                "Scena: " + (g.scena || "(bez scene)") +
-                " | Segment: " + g.segment +
-                "<br>Uloge: " + g.uloge.join(", ") +
-                "</div>";
+            const block = document.createElement("div");
+            block.style.marginTop = "6px";
+            appendTextLine(block, "Scena: " + (g.scena || "(bez scene)") + " | Segment: " + g.segment);
+            block.appendChild(document.createTextNode("Uloge: " + g.uloge.join(", ")));
+            outputGrupe.appendChild(block);
         });
-
-        outputGrupe.innerHTML = html;
     }
 
 
@@ -119,8 +134,11 @@ window.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    outputPogresne.innerHTML =
-        "<strong>Pogresne uloge:</strong> " + pogresne.join(", ");
+    clearOutput(outputPogresne);
+    const strong = document.createElement("strong");
+    strong.textContent = "Pogresne uloge: ";
+    outputPogresne.appendChild(strong);
+    outputPogresne.appendChild(document.createTextNode(pogresne.join(", ")));
 }
 
 async function prikaziBrojLinija() {

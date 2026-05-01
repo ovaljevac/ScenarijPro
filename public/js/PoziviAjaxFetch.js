@@ -69,7 +69,7 @@ const PoziviAjaxFetch = (function () {
       return request(
         "POST",
         `/api/scenarios/${encodeURIComponent(scenarioId)}/lines/${encodeURIComponent(lineId)}/lock`,
-        { userId },
+        {},
         callback
       );
     },
@@ -78,7 +78,7 @@ const PoziviAjaxFetch = (function () {
       return request(
         "PUT",
         `/api/scenarios/${encodeURIComponent(scenarioId)}/lines/${encodeURIComponent(lineId)}`,
-        { userId, newText },
+        { newText },
         callback
       );
     },
@@ -105,7 +105,7 @@ const PoziviAjaxFetch = (function () {
       return request(
         "POST",
         `/api/scenarios/${encodeURIComponent(scenarioId)}/characters/lock`,
-        { userId, characterName },
+        { characterName },
         callback
       );
     },
@@ -114,7 +114,7 @@ const PoziviAjaxFetch = (function () {
       return request(
         "POST",
         `/api/scenarios/${encodeURIComponent(scenarioId)}/characters/update`,
-        { userId, oldName, newName },
+        { oldName, newName },
         callback
       );
     },

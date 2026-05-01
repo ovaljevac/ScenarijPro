@@ -36,8 +36,12 @@
         <div class="user-info security-settings">
             <h2 class="section-title security-title">Sigurnosne postavke</h2>
             <div class="form-row">
+                <label class="field-label" for="currentPassword">Trenutna sifra</label>
+                <input type="password" id="currentPassword" class="input-field" placeholder="********" autocomplete="current-password"/>
+            </div>
+            <div class="form-row">
                 <label class="field-label" for="password">Nova sifra</label>
-                <input type="password" id="password" class="input-field red-border" placeholder="********"/>
+                <input type="password" id="password" class="input-field red-border" placeholder="********" autocomplete="new-password"/>
             </div>
             <small class="hint">Ostavite prazno da zadrzite trenutnu sifru. Nova sifra se sprema heširana u bazu.</small>
             <div class="checkbox-field">

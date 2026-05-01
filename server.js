@@ -16,14 +16,60 @@ app.use(express.json({ limit: "1mb" }));
 
 const scryptAsync = promisify(crypto.scrypt);
 const PASSWORD_PARAMS = { N: 16384, r: 8, p: 1, keylen: 64 };
+const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
+const rateBuckets = new Map();
 
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  const allowedOrigins = String(process.env.CORS_ORIGINS || "")
+    .split(",")
+    .map(origin => origin.trim())
+    .filter(Boolean);
+  const origin = req.headers.origin;
+  const requestHost = req.headers.host;
+  const sameOrigin = origin && requestHost && (() => {
+    try {
+      return new URL(origin).host === requestHost;
+    } catch {
+      return false;
+    }
+  })();
+  const allowAnyOrigin = process.env.NODE_ENV !== "production" && allowedOrigins.length === 0;
+  const allowedOrigin = allowAnyOrigin ? "*" : (sameOrigin || allowedOrigins.includes(origin)) ? origin : "";
+
+  if (allowedOrigin) res.header("Access-Control-Allow-Origin", allowedOrigin);
+  if (!allowedOrigin && origin) return res.sendStatus(403);
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS");
   if (req.method === "OPTIONS") return res.sendStatus(200);
   next();
 });
+
+function clientKey(req) {
+  return String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown").split(",")[0].trim();
+}
+
+function rateLimit({ windowMs, max, keyPrefix }) {
+  return (req, res, next) => {
+    const now = Date.now();
+    const key = `${keyPrefix}:${clientKey(req)}`;
+    const bucket = rateBuckets.get(key);
+
+    if (!bucket || bucket.resetAt <= now) {
+      rateBuckets.set(key, { count: 1, resetAt: now + windowMs });
+      next();
+      return;
+    }
+
+    if (bucket.count >= max) {
+      const retryAfter = Math.ceil((bucket.resetAt - now) / 1000);
+      res.setHeader("Retry-After", String(retryAfter));
+      return res.status(429).json({ message: "Previse pokusaja. Pokusajte ponovo kasnije." });
+    }
+
+    bucket.count += 1;
+    next();
+  };
+}
 
 function nowUnixSeconds() {
   return Math.floor(Date.now() / 1000);
@@ -95,6 +141,7 @@ async function verifyPassword(password, user) {
 async function issueToken(user) {
   const token = crypto.randomBytes(48).toString("base64url");
   user.sessionTokenHash = hashToken(token);
+  user.sessionExpiresAt = new Date(Date.now() + SESSION_TTL_MS);
   await user.save();
   return token;
 }
@@ -104,7 +151,15 @@ async function getAuthUser(req) {
   const match = header.match(/^Bearer\s+(.+)$/i);
   if (!match) return null;
   const tokenHash = hashToken(match[1]);
-  return User.findOne({ where: { sessionTokenHash: tokenHash } });
+  const user = await User.findOne({ where: { sessionTokenHash: tokenHash } });
+  if (!user) return null;
+  if (!user.sessionExpiresAt || new Date(user.sessionExpiresAt).getTime() <= Date.now()) {
+    user.sessionTokenHash = null;
+    user.sessionExpiresAt = null;
+    await user.save();
+    return null;
+  }
+  return user;
 }
 
 async function requireAuth(req, res) {
@@ -319,7 +374,10 @@ function buildLineRows(scenarioId, contentLines) {
 /**
  * SPIRALA 3 RUTE (identicne, ali koriste MySQL)
  */
-app.post("/api/auth/register", async (req, res) => {
+const authRateLimit = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, keyPrefix: "auth" });
+const loginRateLimit = rateLimit({ windowMs: 15 * 60 * 1000, max: 8, keyPrefix: "login" });
+
+app.post("/api/auth/register", authRateLimit, async (req, res) => {
   const firstName = String(req.body?.firstName || "").trim();
   const lastName = String(req.body?.lastName || "").trim();
   const email = normalizeEmail(req.body?.email);
@@ -352,7 +410,7 @@ app.post("/api/auth/register", async (req, res) => {
   }
 });
 
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", loginRateLimit, async (req, res) => {
   const email = normalizeEmail(req.body?.email);
   const password = String(req.body?.password || "");
 
@@ -379,6 +437,7 @@ app.post("/api/auth/logout", async (req, res) => {
   const user = await getAuthUser(req);
   if (user) {
     user.sessionTokenHash = null;
+    user.sessionExpiresAt = null;
     await user.save();
   }
   return res.status(200).json({ message: "Odjavljeni ste." });
@@ -391,6 +450,7 @@ app.put("/api/users/me", async (req, res) => {
   const firstName = String(req.body?.firstName || "").trim();
   const lastName = String(req.body?.lastName || "").trim();
   const email = normalizeEmail(req.body?.email);
+  const currentPassword = String(req.body?.currentPassword || "");
   const newPassword = String(req.body?.newPassword || "");
 
   if (!firstName || !lastName || !email) {
@@ -415,6 +475,10 @@ app.put("/api/users/me", async (req, res) => {
   user.twoFactorEnabled = !!req.body?.twoFactorEnabled;
 
   if (newPassword) {
+    const currentOk = await verifyPassword(currentPassword, user);
+    if (!currentOk) {
+      return res.status(401).json({ message: "Trenutna sifra nije ispravna." });
+    }
     if (!validatePassword(newPassword)) {
       return res.status(400).json({
         message: "Nova sifra mora imati najmanje 8 znakova, veliko i malo slovo, broj i specijalni znak.",
@@ -562,10 +626,11 @@ app.put("/api/scenarios/:scenarioId/content", async (req, res) => {
 });
 
 app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", async (req, res) => {
-  const user = await getAuthUser(req);
+  const user = await requireAuth(req, res);
+  if (!user) return;
   const scenarioId = parsePositiveInt(req.params.scenarioId);
   const lineId = parsePositiveInt(req.params.lineId);
-  const userId = req.body?.userId;
+  const userId = user.id;
 
   if (!scenarioId || !lineId) return res.status(400).json({ message: "Neispravan scenarioId ili lineId!" });
 
@@ -593,10 +658,11 @@ app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", async (req, res) => {
 });
 
 app.put("/api/scenarios/:scenarioId/lines/:lineId", async (req, res) => {
-  const authUser = await getAuthUser(req);
+  const authUser = await requireAuth(req, res);
+  if (!authUser) return;
   const scenarioId = parsePositiveInt(req.params.scenarioId);
   const lineId = parsePositiveInt(req.params.lineId);
-  const userId = req.body?.userId;
+  const userId = authUser.id;
   const newText = req.body?.newText;
 
   if (!scenarioId || !lineId) return res.status(400).json({ message: "Neispravan scenarioId ili lineId!" });
@@ -732,9 +798,10 @@ app.put("/api/scenarios/:scenarioId/lines/:lineId", async (req, res) => {
 });
 
 app.post("/api/scenarios/:scenarioId/characters/lock", async (req, res) => {
-  const authUser = await getAuthUser(req);
+  const authUser = await requireAuth(req, res);
+  if (!authUser) return;
   const scenarioId = parsePositiveInt(req.params.scenarioId);
-  const userId = req.body?.userId;
+  const userId = authUser.id;
   const characterName = req.body?.characterName;
 
   if (!scenarioId) return res.status(400).json({ message: "Neispravan scenarioId!" });
@@ -758,9 +825,10 @@ app.post("/api/scenarios/:scenarioId/characters/lock", async (req, res) => {
 });
 
 app.post("/api/scenarios/:scenarioId/characters/update", async (req, res) => {
-  const authUser = await getAuthUser(req);
+  const authUser = await requireAuth(req, res);
+  if (!authUser) return;
   const scenarioId = parsePositiveInt(req.params.scenarioId);
-  const userId = req.body?.userId;
+  const userId = authUser.id;
   const oldName = String(req.body?.oldName ?? "");
   const newName = String(req.body?.newName ?? "");
 

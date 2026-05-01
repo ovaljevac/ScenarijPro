@@ -3,6 +3,7 @@ window.addEventListener("DOMContentLoaded", function () {
   const lastName = document.getElementById("lastName");
   const email = document.getElementById("email");
   const items = document.getElementById("items");
+  const currentPassword = document.getElementById("currentPassword");
   const password = document.getElementById("password");
   const twoFactor = document.getElementById("2fa");
   const frequency = document.getElementById("frequency");
@@ -50,6 +51,7 @@ window.addEventListener("DOMContentLoaded", function () {
         lastName: lastName.value,
         email: email.value,
         itemsPerPage: items.value,
+        currentPassword: password.value ? currentPassword.value : "",
         newPassword: password.value,
         twoFactorEnabled: twoFactor.checked,
         contactPreference: getContactPreference(),
@@ -57,6 +59,7 @@ window.addEventListener("DOMContentLoaded", function () {
       },
       (status, data) => {
         if (status === 200) {
+          currentPassword.value = "";
           password.value = "";
           localStorage.setItem("scenarijProUser", JSON.stringify(data.user || null));
           setStatus(data?.message || "Postavke su spremljene.", "success");
