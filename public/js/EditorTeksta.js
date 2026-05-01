@@ -98,15 +98,29 @@ let EditorTeksta = function (divRef) {
         return rijeci.length;
     };
 
+    let dajLinijeTeksta = function () {
+        const editorLines = div.querySelectorAll(".wt-line");
+        if (editorLines.length > 0) {
+            return Array.from(editorLines).map(line => (line.textContent || "").trim());
+        }
+
+        const text = div.innerText || div.textContent || "";
+        return text
+            .replace(/\r\n/g, "\n")
+            .replace(/\r/g, "\n")
+            .split("\n")
+            .map(line => line.trim());
+    };
+
     let jeUloga = function (linija, sljedecaLinija) {
         if (!linija) {
             return false;
         }
         const ime = linija.trim();
-        if (!/^[A-Z ]+$/.test(ime)) {
+        if (!/^[\p{Lu} ]+$/u.test(ime)) {
             return false;
         }
-        if (!/[A-Z]/.test(ime)) {
+        if (!/\p{Lu}/u.test(ime)) {
             return false;
         }
         return true;
@@ -129,7 +143,18 @@ let EditorTeksta = function (divRef) {
     };
 
     let sveVelikim = function (line) {
-        return /^[A-Z ]+$/.test(line.trim());
+        return /^[\p{Lu} ]+$/u.test(line.trim());
+    };
+
+    let jeScena = function (line) {
+        if (!line) {
+            return false;
+        }
+        const t = line.trim();
+        if (!/^[\p{Lu}0-9 .'-]+$/u.test(t)) {
+            return false;
+        }
+        return /^(INT|EXT)\./.test(t);
     };
 
     let daLiJeSceneHeading = function (line) {
@@ -142,9 +167,7 @@ let EditorTeksta = function (divRef) {
     };
 
     let dajSveUloge = function () {
-        const lines = div.innerText
-            .split("\n")
-            .map(l => l.trim());
+        const lines = dajLinijeTeksta();
 
         const uloge = [];
 
@@ -303,28 +326,7 @@ let EditorTeksta = function (divRef) {
         }
         const target = uloga.trim().toUpperCase();
 
-        const text = div.innerHTML
-            .replace(/<br\s*\/?>/gi, "\n")
-            .replace(/\r\n/g, "\n")
-            .replace(/\r/g, "\n")
-            .replace(/\n+/g, "\n")
-            .trim();
-
-        const lines = text.split("\n").map(l => l.trim());
-
-        let jeScena = function (line) {
-            if (!line) {
-                return false;
-            }
-            const t = line.trim();
-            if (!/^[A-Z .-]+$/.test(t)) {
-                return false;
-            }
-            if (!/^(INT|EXT)\./.test(t)) {
-                return false;
-            }
-            return true;
-        };
+        const lines = dajLinijeTeksta();
 
         const je_Uloga = function (i) {
             const line = lines[i] || "";
@@ -459,32 +461,11 @@ let EditorTeksta = function (divRef) {
     };
 
     let grupisiUloge = function () {
-        const text = div.innerHTML
-            .replace(/<br\s*\/?>/gi, "\n")
-            .replace(/\r\n/g, "\n")
-            .replace(/\r/g, "\n")
-            .replace(/\n+/g, "\n")
-            .trim();
+        const lines = dajLinijeTeksta();
 
-        if (!text) {
+        if (!lines.some(line => line.trim())) {
             return [];
         }
-
-        const lines = text.split("\n").map(l => l.trim());
-
-        let jeScena = function (line) {
-            if (!line) {
-                return false;
-            }
-            const t = line.trim();
-            if (!/^[A-Z .-]+$/.test(t)) {
-                return false;
-            }
-            if (!/^(INT|EXT)\./.test(t)) {
-                return false;
-            }
-            return true;
-        };
 
         const groups = [];
         const groupIndex = {};
@@ -578,14 +559,7 @@ let EditorTeksta = function (divRef) {
         }
         const target = uloga.trim().toUpperCase();
 
-        const text = div.innerHTML
-            .replace(/<br\s*\/?>/gi, "\n")
-            .replace(/\r\n/g, "\n")
-            .replace(/\r/g, "\n")
-            .replace(/\n+/g, "\n")
-            .trim();
-
-        const lines = text.split("\n");
+        const lines = dajLinijeTeksta();
         let total = 0;
 
         for (let i = 0; i < lines.length; i++) {
@@ -605,7 +579,7 @@ let EditorTeksta = function (divRef) {
                 if (l2.length === 0) {
                     break;
                 }
-                if (daLiJeSceneHeading(l2)) {
+                if (daLiJeSceneHeading(l2) || jeScena(l2)) {
                     break;
                 }
                 if (jeUloga(lines[j], lines[j + 1] || "")) {

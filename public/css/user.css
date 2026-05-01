@@ -154,6 +154,21 @@ body {
   background-color: #4a34d1; 
 }
 
+.settings-status {
+    margin: 10px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+    text-align: center;
+}
+
+.settings-status[data-type="error"] {
+    color: #b91c1c;
+}
+
+.settings-status[data-type="success"] {
+    color: #047857;
+}
+
 *, *::before, *::after {
     box-sizing: border-box; 
 }

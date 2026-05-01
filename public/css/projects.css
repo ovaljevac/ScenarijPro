@@ -4,6 +4,10 @@ body {
     background-color: #f5f6fa;
 }
 
+.is-hidden {
+    display: none !important;
+}
+
 
 .container {
     display: flex;
@@ -23,6 +27,7 @@ body {
     padding-top: 30px;
     border-right: 1px solid #ccc;
     padding-left: 20px;
+    padding-bottom: 20px;
 }
 
 
@@ -75,6 +80,13 @@ body {
     margin-top: 10px;
     width: 205px;
     gap: 12px;
+}
+
+.auth-actions {
+    display: grid;
+    gap: 8px;
+    width: 205px;
+    margin-top: auto;
 }
 
 .avatar {
@@ -148,9 +160,40 @@ body {
     max-width: 150px;
 }
 
+.secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: #333;
+    border: 1px solid #d1d5db;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    width: 100%;
+}
+
 .primary-btn:hover {
     background-color: #0b2899;
     cursor: pointer;
+}
+
+.secondary-btn:hover {
+    background: #f3f4f6;
+}
+
+.logout-btn {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #fff;
+}
+
+.logout-btn:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #fff;
 }
 
 projects-container {
@@ -171,6 +214,14 @@ projects-container {
     border-radius: 14px;
     padding: 18px 20px;
     border: 1px solid #e6e8f3;
+    font: inherit;
+    text-align: left;
+}
+
+.project-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
 }
 
 .card:hover {
@@ -229,6 +280,8 @@ projects-container {
     border: 2px dashed #cfd6e3;
     background: #f9fbff;
     cursor: pointer;
+    min-height: 176px;
+    width: 100%;
 }
 
 .add-card:hover {
@@ -246,6 +299,29 @@ projects-container {
     font-size: 28px;
     margin-bottom: 8px;
     color: #6b6fff;
+}
+
+.projects-status,
+.empty-projects {
+    margin: 0 20px 18px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.projects-status[data-type="error"] {
+    color: #b91c1c;
+}
+
+.empty-projects {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 176px;
+    padding: 18px;
+    background: #fff;
+    border: 1px solid #e6e8f3;
+    border-radius: 14px;
+    text-align: center;
 }
 
 *, *::before, *::after {
@@ -273,6 +349,11 @@ projects-container {
 
 .user-card {
     width: 100%;
+}
+
+.auth-actions {
+    width: 100%;
+    margin-top: 14px;
 }
 
 .nav-container > hr {

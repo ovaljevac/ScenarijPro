@@ -109,6 +109,53 @@ Example operations:
 
 ---
 
+## Deployment
+
+### Required environment variables
+
+Copy `.env.example` to `.env` locally. On a deployment platform, set these as environment variables instead of committing `.env`.
+
+```env
+DB_NAME=your_database_name
+DB_USER=your_database_user
+DB_PASSWORD=your_database_password
+DB_HOST=localhost
+DB_DIALECT=mysql
+DB_SYNC=none
+PORT=3000
+NODE_ENV=production
+```
+
+Use `DB_SYNC=none` in production. Use `DB_SYNC=alter` only for local development or a controlled staging environment. `DB_SYNC=force` is blocked in production because it deletes and recreates tables.
+
+### Start command
+
+```bash
+npm ci
+npm start
+```
+
+The app serves static pages from `public/` and exposes the main page at:
+
+```text
+/html/projects.html
+```
+
+### Health check
+
+```text
+/health
+```
+
+### Platform notes
+
+- Render/Railway/Fly/Heroku-style platforms can use the included `Procfile`.
+- Docker deployments can use the included `Dockerfile`.
+- Configure a MySQL database before starting the app.
+- Do not deploy `.env`; it is intentionally ignored by git.
+
+---
+
 ## 📸 Screenshots
 
 <p align="center">

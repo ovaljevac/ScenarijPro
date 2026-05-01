@@ -1,11 +1,20 @@
 
 const PoziviAjaxFetch = (function () {
+  function apiUrl(url) {
+    if (window.location.protocol === "file:" && url.startsWith("/")) {
+      return `http://localhost:3000${url}`;
+    }
+    return url;
+  }
+
   async function request(method, url, body, callback) {
     try {
       const opts = { method, headers: { "Content-Type": "application/json" } };
+      const token = localStorage.getItem("scenarijProToken");
+      if (token) opts.headers.Authorization = `Bearer ${token}`;
       if (body !== undefined && body !== null) opts.body = JSON.stringify(body);
 
-      const res = await fetch(url, opts);
+      const res = await fetch(apiUrl(url), opts);
       let data = null;
       try {
         data = await res.json();
@@ -19,6 +28,39 @@ const PoziviAjaxFetch = (function () {
   }
 
   return {
+    setToken: function (token) {
+      if (token) localStorage.setItem("scenarijProToken", token);
+      else localStorage.removeItem("scenarijProToken");
+    },
+
+    getToken: function () {
+      return localStorage.getItem("scenarijProToken");
+    },
+
+    register: function (payload, callback) {
+      return request("POST", "/api/auth/register", payload, callback);
+    },
+
+    login: function (email, password, callback) {
+      return request("POST", "/api/auth/login", { email, password }, callback);
+    },
+
+    logout: function (callback) {
+      return request("POST", "/api/auth/logout", null, callback);
+    },
+
+    getMe: function (callback) {
+      return request("GET", "/api/auth/me", null, callback);
+    },
+
+    updateMe: function (payload, callback) {
+      return request("PUT", "/api/users/me", payload, callback);
+    },
+
+    getScenarios: function (callback) {
+      return request("GET", "/api/scenarios", null, callback);
+    },
+
     postScenario: function (title, callback) {
       return request("POST", "/api/scenarios", { title }, callback);
     },
@@ -37,6 +79,24 @@ const PoziviAjaxFetch = (function () {
         "PUT",
         `/api/scenarios/${encodeURIComponent(scenarioId)}/lines/${encodeURIComponent(lineId)}`,
         { userId, newText },
+        callback
+      );
+    },
+
+    saveScenarioContent: function (scenarioId, content, title, callback) {
+      return request(
+        "PUT",
+        `/api/scenarios/${encodeURIComponent(scenarioId)}/content`,
+        { content, title },
+        callback
+      );
+    },
+
+    assignScenario: function (scenarioId, email, callback) {
+      return request(
+        "POST",
+        `/api/scenarios/${encodeURIComponent(scenarioId)}/assign`,
+        { email },
         callback
       );
     },
