@@ -7,6 +7,7 @@ export const sequelize = new Sequelize(
   requireEnv("DB_PASSWORD"),
   {
   host: requireEnv("DB_HOST"),
+  port: Number(process.env.DB_PORT || 3306),
   dialect: requireEnv("DB_DIALECT"),
   logging: false,
   }

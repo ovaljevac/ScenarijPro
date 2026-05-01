@@ -2,6 +2,7 @@ body {
     margin: 0;
     font-family: Poppins, Inter, sans-serif;
     background-color: #f5f6fa;
+    min-height: 100vh;
 }
 
 .is-hidden {
@@ -11,12 +12,16 @@ body {
 
 .container {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
     width: 100%;
 }
 
 
 .nav-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
     width: 250px;
     min-width: 250px;
     max-width: 250px;
@@ -28,6 +33,7 @@ body {
     border-right: 1px solid #ccc;
     padding-left: 20px;
     padding-bottom: 20px;
+    overflow: hidden;
 }
 
 
@@ -84,8 +90,10 @@ body {
 
 .auth-actions {
     display: grid;
+    align-content: start;
     gap: 8px;
     width: 205px;
+    min-height: 88px;
     margin-top: auto;
 }
 
@@ -105,16 +113,24 @@ body {
     margin: 0;
     font-weight: 500;
     color: #333333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .user-info .role {
     margin: 0;
     font-size: 14px;
     color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .main-menu {
     flex-grow: 1;
+    min-width: 0;
+    margin-left: 250px;
 }
 
 .header {
@@ -322,6 +338,8 @@ projects-container {
     border: 1px solid #e6e8f3;
     border-radius: 14px;
     text-align: center;
+    color: #4b5563;
+    font-weight: 600;
 }
 
 *, *::before, *::after {
@@ -336,11 +354,14 @@ projects-container {
 }
 
 .nav-container {    
+    position: static;
     width: 100%;
     min-width: 100%;
+    max-width: none;
     border-right: none;
     border-bottom: 1px solid #ccc; 
-    padding: 20px 20px;      
+    padding: 20px 20px;
+    overflow: visible;
 }
 
 .nav-container a {
@@ -353,6 +374,7 @@ projects-container {
 
 .auth-actions {
     width: 100%;
+    min-height: 0;
     margin-top: 14px;
 }
 
@@ -363,6 +385,7 @@ projects-container {
 .main-menu {
     flex-grow: 0;
     width: 100%;
+    margin-left: 0;
 }
 
 .header {

@@ -143,6 +143,11 @@ body {
 }
 
 .sidebar {
+  position: sticky;
+  top: 70px;
+  align-self: start;
+  height: calc(100vh - 70px);
+  overflow-y: auto;
   background: #ffffff;
   border-right: 1px solid #dbe1ea;
   padding: 18px 14px;
@@ -464,6 +469,9 @@ body {
   }
 
   .sidebar {
+    position: static;
+    height: auto;
+    overflow: visible;
     order: 2;
     border-top: 1px solid #dbe1ea;
     border-right: 0;

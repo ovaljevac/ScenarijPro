@@ -271,7 +271,7 @@ async function getAllLines(scenarioId) {
 }
 
 async function userCanAccessScenario(user, scenarioId) {
-  if (!user) return true;
+  if (!user) return false;
   const scenario = await getScenarioOrNull(scenarioId);
   if (!scenario) return false;
   if (scenario.ownerId === user.id) return true;
@@ -433,17 +433,21 @@ app.put("/api/users/me", async (req, res) => {
 app.get("/api/scenarios", async (req, res) => {
   try {
     const user = await getAuthUser(req);
-    let where = {};
-    if (user) {
-      const assignments = await ScenarioAssignment.findAll({ where: { userId: user.id } });
-      const assignedIds = assignments.map(a => a.scenarioId);
-      where = {
-        [Op.or]: [
-          { ownerId: user.id },
-          { id: assignedIds.length ? assignedIds : [-1] },
-        ],
-      };
+    if (!user) {
+      return res.status(200).json({
+        projects: [],
+        message: "Prijavite se da vidite svoje scenarije.",
+      });
     }
+
+    const assignments = await ScenarioAssignment.findAll({ where: { userId: user.id } });
+    const assignedIds = assignments.map(a => a.scenarioId);
+    const where = {
+      [Op.or]: [
+        { ownerId: user.id },
+        { id: assignedIds.length ? assignedIds : [-1] },
+      ],
+    };
 
     const scenarios = await Scenario.findAll({
       attributes: ["id", "title"],
@@ -479,8 +483,9 @@ app.get("/api/scenarios", async (req, res) => {
 
 app.post("/api/scenarios", async (req, res) => {
   try {
-    const user = await getAuthUser(req);
-    const created = await createScenarioWithInitialLine(req.body?.title, user?.id || null);
+    const user = await requireAuth(req, res);
+    if (!user) return;
+    const created = await createScenarioWithInitialLine(req.body?.title, user.id);
     return res.status(200).json(created);
   } catch {
     return res.status(500).json({ message: "Greska pri kreiranju scenarija." });

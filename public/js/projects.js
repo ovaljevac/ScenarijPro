@@ -11,6 +11,7 @@ window.addEventListener("DOMContentLoaded", function () {
   const navUserRole = document.getElementById("navUserRole");
 
   let projects = [];
+  let currentUser = null;
 
   function getStoredUser() {
     try {
@@ -78,9 +79,13 @@ window.addEventListener("DOMContentLoaded", function () {
     if (visibleProjects.length === 0) {
       const empty = document.createElement("div");
       empty.className = "empty-projects";
-      empty.textContent = projects.length === 0
-        ? "Nema projekata. Kreiraj prvi scenarij."
-        : "Nema projekata za unesenu pretragu.";
+      if (!currentUser) {
+        empty.textContent = "Prijavite se da vidite svoje scenarije.";
+      } else {
+        empty.textContent = projects.length === 0
+          ? "Nema projekata. Kreiraj prvi scenarij."
+          : "Nema projekata za unesenu pretragu.";
+      }
       grid.appendChild(empty);
     } else {
       visibleProjects.forEach((project, index) => {
@@ -120,12 +125,14 @@ window.addEventListener("DOMContentLoaded", function () {
     }
 
     if (user) {
+      currentUser = user;
       navUserName.textContent = `${user.firstName} ${user.lastName}`;
       navUserRole.textContent = user.email;
       setVisible(loginBtn, false);
       setVisible(registerBtn, false);
       setVisible(logoutBtn, true);
     } else {
+      currentUser = null;
       navUserName.textContent = "Gost";
       navUserRole.textContent = "Niste prijavljeni";
       setVisible(loginBtn, true);
