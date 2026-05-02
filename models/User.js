@@ -9,7 +9,6 @@ export const User = sequelize.define(
     lastName: { type: DataTypes.STRING, allowNull: false },
     email: { type: DataTypes.STRING, allowNull: false, unique: true },
     passwordHash: { type: DataTypes.STRING(256), allowNull: false },
-    passwordSalt: { type: DataTypes.STRING(128), allowNull: false },
     passwordParams: { type: DataTypes.STRING(256), allowNull: false },
     sessionTokenHash: { type: DataTypes.STRING(256), allowNull: true },
     sessionExpiresAt: { type: DataTypes.DATE, allowNull: true },
