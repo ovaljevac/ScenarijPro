@@ -16,7 +16,7 @@ body {
   top: 0;
   z-index: 100;
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto auto;
+  grid-template-columns: minmax(260px, 1fr) auto auto auto;
   align-items: center;
   gap: 14px;
   min-height: 70px;
@@ -134,6 +134,18 @@ body {
   color: #ffffff;
   background: #166534;
   border-color: #166534;
+}
+
+.delete-btn {
+  color: #ffffff;
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.delete-btn:hover {
+  color: #ffffff;
+  background: #b91c1c;
+  border-color: #b91c1c;
 }
 
 .main-page {

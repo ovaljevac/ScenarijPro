@@ -101,10 +101,20 @@
   border-color: #5b3fff;
 }
 
+.modal-danger {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
 .modal-cancel:hover {
   background: #f3f4f6;
 }
 
 .modal-confirm:hover {
   background: #4a34d1;
+}
+
+.modal-danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
 }

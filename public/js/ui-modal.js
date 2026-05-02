@@ -89,5 +89,62 @@ const ScenarijModal = (function () {
     });
   }
 
-  return { prompt };
+  function confirm(options) {
+    const config = {
+      title: "Potvrda",
+      description: "",
+      confirmText: "Potvrdi",
+      cancelText: "Odustani",
+      danger: false,
+      ...options,
+    };
+
+    return new Promise(resolve => {
+      const backdrop = document.createElement("div");
+      backdrop.className = "modal-backdrop";
+      backdrop.innerHTML = `
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+          <div class="modal-head">
+            <h2 id="confirmTitle" class="modal-title"></h2>
+            <p class="modal-description"></p>
+          </div>
+          <div class="modal-actions">
+            <button class="modal-btn modal-cancel" type="button"></button>
+            <button class="modal-btn modal-confirm" type="button"></button>
+          </div>
+        </div>
+      `;
+
+      const title = backdrop.querySelector(".modal-title");
+      const description = backdrop.querySelector(".modal-description");
+      const cancel = backdrop.querySelector(".modal-cancel");
+      const confirmButton = backdrop.querySelector(".modal-confirm");
+
+      title.textContent = config.title;
+      description.textContent = config.description;
+      description.hidden = !config.description;
+      cancel.textContent = config.cancelText;
+      confirmButton.textContent = config.confirmText;
+      confirmButton.classList.toggle("modal-danger", !!config.danger);
+
+      function finish(value) {
+        close(backdrop);
+        resolve(value);
+      }
+
+      cancel.addEventListener("click", () => finish(false));
+      confirmButton.addEventListener("click", () => finish(true));
+      backdrop.addEventListener("click", event => {
+        if (event.target === backdrop) finish(false);
+      });
+      backdrop.addEventListener("keydown", event => {
+        if (event.key === "Escape") finish(false);
+      });
+
+      document.body.appendChild(backdrop);
+      confirmButton.focus();
+    });
+  }
+
+  return { prompt, confirm };
 })();

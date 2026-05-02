@@ -27,8 +27,9 @@
   },
   "homepage": "https://bitbucket.org/ovaljevac1/wt26p19472#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "express": "5.2.1",
-    "sequelize": "^6.37.0",
-    "mysql2": "^3.11.0"
+    "mysql2": "^3.11.0",
+    "sequelize": "^6.37.0"
   }
 }
