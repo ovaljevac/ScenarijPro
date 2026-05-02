@@ -234,6 +234,11 @@ projects-container {
     text-align: left;
 }
 
+.project-card {
+    display: grid;
+    gap: 14px;
+}
+
 .project-link {
     display: block;
     color: inherit;
@@ -242,6 +247,34 @@ projects-container {
 
 .card:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.project-card-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.delete-project-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 8px 12px;
+    color: #b91c1c;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.delete-project-btn:hover {
+    color: #ffffff;
+    background: #dc2626;
+    border-color: #dc2626;
 }
 
 

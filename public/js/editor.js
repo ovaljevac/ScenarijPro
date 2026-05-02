@@ -256,6 +256,7 @@ if (btnLinijeUloge) {
         const btnRename = document.getElementById("wtRenameCharacter");
         const btnAssign = document.getElementById("wtAssignScenario");
         const btnSave = document.querySelector(".save-btn");
+        const btnDeleteScenario = document.getElementById("deleteScenarioBtn");
         const elStatus = document.getElementById("wtStatus");
 
         let currentScenarioId = null;
@@ -314,6 +315,7 @@ if (btnLinijeUloge) {
             editorDiv.setAttribute("contenteditable", "false");
             editorDiv.innerHTML = "";
             setPageTitle(scenario);
+            if (btnDeleteScenario) btnDeleteScenario.hidden = !scenario?.canDelete;
 
             const titleEl = document.createElement("div");
             titleEl.style.fontWeight = "600";
@@ -543,6 +545,33 @@ if (btnLinijeUloge) {
             });
         }
 
+        async function deleteCurrentScenario() {
+            if (!currentScenarioId) {
+                setStatus("Prvo ucitaj scenario.");
+                return;
+            }
+
+            const title = document.querySelector(".header-title h2")?.textContent || "Neimenovani scenarij";
+            const confirmed = await ScenarijModal.confirm({
+                title: "Obrisati scenarij?",
+                description: `Scenario "${title}" i sve njegove promjene ce biti trajno obrisani.`,
+                confirmText: "Obrisi",
+                cancelText: "Odustani",
+                danger: true,
+            });
+            if (!confirmed) return;
+
+            setStatus("Brisanje scenarija...");
+            PoziviAjaxFetch.deleteScenario(currentScenarioId, (status, data) => {
+                if (status === 200) {
+                    setStatus(data?.message || "Scenario je obrisan.");
+                    window.location.href = "projects.html";
+                    return;
+                }
+                setStatus(data?.message || "Scenario nije obrisan.");
+            });
+        }
+
         function renameCharacter() {
             if (!currentScenarioId) {
                 setStatus("Prvo ucitaj scenario.");
@@ -602,6 +631,7 @@ if (btnLinijeUloge) {
         btnRename?.addEventListener("click", () => renameCharacter());
         btnAssign?.addEventListener("click", () => assignScenario());
         btnSave?.addEventListener("click", () => saveWholeScenario());
+        btnDeleteScenario?.addEventListener("click", () => deleteCurrentScenario());
         document.querySelectorAll("[data-line-type]").forEach(btn => {
             btn.addEventListener("click", () => applyLineType(btn.dataset.lineType));
         });

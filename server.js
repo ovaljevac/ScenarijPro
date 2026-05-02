@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { Op } from "sequelize";
 import crypto from "crypto";
 import { promisify } from "util";
+import bcrypt from "bcrypt";
 
 import { sequelize } from "./db.js";
 import { Scenario, Line, Delta, Checkpoint, User, ScenarioAssignment } from "./models/index.js";
@@ -16,6 +17,7 @@ app.use(express.json({ limit: "1mb" }));
 
 const scryptAsync = promisify(crypto.scrypt);
 const PASSWORD_PARAMS = { N: 16384, r: 8, p: 1, keylen: 64 };
+const BCRYPT_ROUNDS = 12;
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 const rateBuckets = new Map();
 
@@ -39,7 +41,7 @@ app.use((req, res, next) => {
   if (allowedOrigin) res.header("Access-Control-Allow-Origin", allowedOrigin);
   if (!allowedOrigin && origin) return res.sendStatus(403);
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   if (req.method === "OPTIONS") return res.sendStatus(200);
   next();
 });
@@ -107,16 +109,11 @@ function hashToken(token) {
 }
 
 async function hashPassword(password) {
-  const salt = crypto.randomBytes(32).toString("hex");
-  const derived = await scryptAsync(String(password), salt, PASSWORD_PARAMS.keylen, {
-    N: PASSWORD_PARAMS.N,
-    r: PASSWORD_PARAMS.r,
-    p: PASSWORD_PARAMS.p,
-  });
+  const passwordHash = await bcrypt.hash(String(password), BCRYPT_ROUNDS);
   return {
-    passwordHash: derived.toString("hex"),
-    passwordSalt: salt,
-    passwordParams: JSON.stringify(PASSWORD_PARAMS),
+    passwordHash,
+    passwordSalt: "",
+    passwordParams: JSON.stringify({ algorithm: "bcrypt", rounds: BCRYPT_ROUNDS }),
   };
 }
 
@@ -126,6 +123,10 @@ async function verifyPassword(password, user) {
     params = JSON.parse(user.passwordParams || "{}");
   } catch {
     params = PASSWORD_PARAMS;
+  }
+
+  if (params.algorithm === "bcrypt" || String(user.passwordHash || "").startsWith("$2")) {
+    return bcrypt.compare(String(password), user.passwordHash);
   }
 
   const derived = await scryptAsync(String(password), user.passwordSalt, Number(params.keylen) || 64, {
@@ -144,6 +145,22 @@ async function issueToken(user) {
   user.sessionExpiresAt = new Date(Date.now() + SESSION_TTL_MS);
   await user.save();
   return token;
+}
+
+async function upgradePasswordHashIfNeeded(password, user) {
+  let params = {};
+  try {
+    params = JSON.parse(user.passwordParams || "{}");
+  } catch {
+    params = {};
+  }
+
+  if (params.algorithm === "bcrypt" && Number(params.rounds) >= BCRYPT_ROUNDS) return;
+  const passwordData = await hashPassword(password);
+  user.passwordHash = passwordData.passwordHash;
+  user.passwordSalt = passwordData.passwordSalt;
+  user.passwordParams = passwordData.passwordParams;
+  await user.save();
 }
 
 async function getAuthUser(req) {
@@ -282,7 +299,7 @@ async function createScenarioWithInitialLine(title, ownerId = null) {
     });
   }
 
-  return { id: created.id, title: created.title, content: base };
+  return { id: created.id, title: created.title, content: base, canDelete: !!ownerId };
 }
 
 /**
@@ -308,6 +325,19 @@ function unlockUserLineIfAny(userId) {
     lineLocks.delete(k);
   }
   userLineLock.delete(userId);
+}
+
+function clearScenarioLocks(scenarioId) {
+  const prefix = `${scenarioId}:`;
+  for (const key of lineLocks.keys()) {
+    if (key.startsWith(prefix)) lineLocks.delete(key);
+  }
+  for (const [userId, locked] of userLineLock.entries()) {
+    if (locked.scenarioId === scenarioId) userLineLock.delete(userId);
+  }
+  for (const key of charLocks.keys()) {
+    if (key.startsWith(prefix)) charLocks.delete(key);
+  }
 }
 
 /**
@@ -424,6 +454,7 @@ app.post("/api/auth/login", loginRateLimit, async (req, res) => {
     return res.status(401).json({ message: "Pogresan email ili sifra." });
   }
 
+  await upgradePasswordHashIfNeeded(password, user);
   const token = await issueToken(user);
   return res.status(200).json({ user: safeUser(user), token });
 });
@@ -514,7 +545,7 @@ app.get("/api/scenarios", async (req, res) => {
     };
 
     const scenarios = await Scenario.findAll({
-      attributes: ["id", "title"],
+      attributes: ["id", "title", "ownerId"],
       where,
       order: [["id", "DESC"]],
     });
@@ -536,6 +567,7 @@ app.get("/api/scenarios", async (req, res) => {
         lineCount: lines.length,
         updatedAt: latestDelta?.timestamp || null,
         updatedLabel: formatRelativeTime(latestDelta?.timestamp),
+        canDelete: scenario.ownerId === user.id,
       });
     }
 
@@ -581,6 +613,31 @@ app.post("/api/scenarios/:scenarioId/assign", async (req, res) => {
   return res.status(200).json({ message: "Scenario je dodijeljen korisniku.", user: safeUser(target) });
 });
 
+app.delete("/api/scenarios/:scenarioId", async (req, res) => {
+  const user = await requireAuth(req, res);
+  if (!user) return;
+
+  const scenarioId = parsePositiveInt(req.params.scenarioId);
+  if (!scenarioId) return res.status(400).json({ message: "Neispravan scenarioId!" });
+
+  const scenario = await getScenarioOrNull(scenarioId);
+  if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
+  if (scenario.ownerId !== user.id) {
+    return res.status(403).json({ message: "Samo vlasnik moze obrisati scenario." });
+  }
+
+  await sequelize.transaction(async (t) => {
+    await ScenarioAssignment.destroy({ where: { scenarioId }, transaction: t });
+    await Checkpoint.destroy({ where: { scenarioId }, transaction: t });
+    await Delta.destroy({ where: { scenarioId }, transaction: t });
+    await Line.destroy({ where: { scenarioId }, transaction: t });
+    await Scenario.destroy({ where: { id: scenarioId }, transaction: t });
+  });
+  clearScenarioLocks(scenarioId);
+
+  return res.status(200).json({ message: "Scenario je obrisan." });
+});
+
 app.put("/api/scenarios/:scenarioId/content", async (req, res) => {
   const user = await getAuthUser(req);
   const scenarioId = parsePositiveInt(req.params.scenarioId);
@@ -618,6 +675,7 @@ app.put("/api/scenarios/:scenarioId/content", async (req, res) => {
       id: scenario.id,
       title: scenario.title,
       content: linesToContent(rows),
+      canDelete: scenario.ownerId === user.id,
       message: "Scenario je uspjesno spremljen u bazu.",
     });
   } catch {
@@ -911,7 +969,12 @@ app.get("/api/scenarios/:scenarioId", async (req, res) => {
 
   const lines = await getAllLines(scenarioId);
   const ordered = orderLines(linesToContent(lines));
-  return res.status(200).json({ id: scenario.id, title: scenario.title, content: ordered });
+  return res.status(200).json({
+    id: scenario.id,
+    title: scenario.title,
+    content: ordered,
+    canDelete: scenario.ownerId === user.id,
+  });
 });
 
 
@@ -1034,7 +1097,12 @@ app.get("/api/scenarios/:scenarioId/restore/:checkpointId", async (req, res) => 
   }
 
   const ordered = orderLines(content);
-  return res.status(200).json({ id: scenario.id, title: scenario.title, content: ordered });
+  return res.status(200).json({
+    id: scenario.id,
+    title: scenario.title,
+    content: ordered,
+    canDelete: scenario.ownerId === user.id,
+  });
 });
 
 app.get("/health", (req, res) => {

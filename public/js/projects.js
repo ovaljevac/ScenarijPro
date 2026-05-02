@@ -43,8 +43,11 @@ window.addEventListener("DOMContentLoaded", function () {
   }
 
   function projectCard(project, index) {
+    const card = document.createElement("article");
+    card.className = `card project-card${index === 0 ? " active-card" : ""}`;
+
     const link = document.createElement("a");
-    link.className = `card project-link${index === 0 ? " active-card" : ""}`;
+    link.className = "project-link";
     link.href = `writing.html?scenarioId=${encodeURIComponent(project.id)}`;
 
     const title = project.title || "Neimenovani scenarij";
@@ -62,7 +65,44 @@ window.addEventListener("DOMContentLoaded", function () {
       </ul>
     `;
     link.querySelector(".card-title").textContent = title;
-    return link;
+    card.appendChild(link);
+
+    if (project.canDelete) {
+      const actions = document.createElement("div");
+      actions.className = "project-card-actions";
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "delete-project-btn";
+      deleteButton.type = "button";
+      deleteButton.innerHTML = `<i class="fa-regular fa-trash-can"></i><span>Obrisi</span>`;
+      deleteButton.addEventListener("click", () => deleteProject(project));
+      actions.appendChild(deleteButton);
+      card.appendChild(actions);
+    }
+
+    return card;
+  }
+
+  async function deleteProject(project) {
+    if (!project?.id) return;
+    const confirmed = await ScenarijModal.confirm({
+      title: "Obrisati scenarij?",
+      description: `Scenario "${project.title || "Neimenovani scenarij"}" i sve njegove promjene ce biti trajno obrisani.`,
+      confirmText: "Obrisi",
+      cancelText: "Odustani",
+      danger: true,
+    });
+    if (!confirmed) return;
+
+    setStatus("Brisanje scenarija...", "loading");
+    PoziviAjaxFetch.deleteScenario(project.id, (status, data) => {
+      if (status === 200) {
+        projects = projects.filter(item => item.id !== project.id);
+        setStatus(data?.message || "Scenario je obrisan.", "success");
+        renderProjects();
+        return;
+      }
+      setStatus(data?.message || "Scenario nije obrisan.", "error");
+    });
   }
 
   function filteredProjects() {

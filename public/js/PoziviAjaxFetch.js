@@ -65,6 +65,10 @@ const PoziviAjaxFetch = (function () {
       return request("POST", "/api/scenarios", { title }, callback);
     },
 
+    deleteScenario: function (scenarioId, callback) {
+      return request("DELETE", `/api/scenarios/${encodeURIComponent(scenarioId)}`, null, callback);
+    },
+
     lockLine: function (scenarioId, lineId, userId, callback) {
       return request(
         "POST",
