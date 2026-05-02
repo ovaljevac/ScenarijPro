@@ -5,7 +5,7 @@ body {
     display: grid;
     place-items: center;
     min-height: 100vh;
-    padding: 10px 20px
+    padding: 18px 20px;
 }
 
 .user-form {
@@ -40,11 +40,8 @@ body {
 
 .user-info {
     background-color: #EEF2FF;
-    padding-left: 20px;
-    padding-top: 0px;
+    padding: 18px 20px;
     border-radius:12px;
-    padding-bottom: 10px;
-    padding-top: 10px;
     border: 2px solid #f5f6fa;
     margin-bottom: 30px;
     margin-left: 20px;
@@ -57,10 +54,9 @@ body {
 }
 
 .input-field{
-    width:95%;
+    width: 100%;
     padding: 10px;
-    margin-top: 4px;
-    margin-bottom:10px;
+    margin: 0;
     background:#fff;
     border:2px solid #8fa5e9;
     border-radius:8px;
@@ -70,7 +66,8 @@ body {
 .field-label {
     display: block;
     font-size:12px;
-    
+    font-weight: 700;
+    color: #374151;
 }
 
 .section-title.security-title {
@@ -92,8 +89,8 @@ body {
     font-size: 12px;
     color: #6b7280;
     display: block;
-    margin-top: 0;
-    margin-bottom: 10px;
+    margin: -4px 0 12px;
+    padding-left: 170px;
 }
 
 .checkbox-field {
@@ -101,6 +98,7 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 12px;
+    padding-left: 170px;
 }
 
 .user-info.notifications {
@@ -114,9 +112,9 @@ body {
 .radio-group {
     display: flex;
     gap: 20px;
-    margin-bottom: 14px;
+    margin: 0;
     font-size: 14px;
-    margin-top: 4px;
+    flex-wrap: wrap;
 }
 
 .input-field.green-border {
@@ -133,7 +131,7 @@ body {
 .user-info.btn {
     background-color: white;
     border: none;
-    padding-left:0;
+    padding: 0;
     margin-bottom: 0
 }
 
@@ -176,10 +174,37 @@ body {
 
 @media (min-width: 750px) {
   .form-row {
-    display: flex;
-    margin-right: 20px;
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    align-items: center;
+    gap: 20px;
+    margin: 0 0 12px;
   }
-  .radio-group {
-    margin-left: 10px;
+
+  .field-label {
+    text-align: right;
+  }
+}
+
+@media (max-width: 749px) {
+  .user-form {
+    padding: 16px;
+    margin: 0;
+  }
+
+  .user-info {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .form-row {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .hint,
+  .checkbox-field {
+    padding-left: 0;
   }
 }

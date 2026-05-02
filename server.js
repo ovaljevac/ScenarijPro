@@ -3,7 +3,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { Op } from "sequelize";
 import crypto from "crypto";
-import { promisify } from "util";
 import bcrypt from "bcrypt";
 
 import { sequelize } from "./db.js";
@@ -15,8 +14,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
-const scryptAsync = promisify(crypto.scrypt);
-const PASSWORD_PARAMS = { N: 16384, r: 8, p: 1, keylen: 64 };
 const BCRYPT_ROUNDS = 12;
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 const rateBuckets = new Map();
@@ -112,31 +109,22 @@ async function hashPassword(password) {
   const passwordHash = await bcrypt.hash(String(password), BCRYPT_ROUNDS);
   return {
     passwordHash,
-    passwordSalt: "",
     passwordParams: JSON.stringify({ algorithm: "bcrypt", rounds: BCRYPT_ROUNDS }),
   };
 }
 
 async function verifyPassword(password, user) {
-  let params = PASSWORD_PARAMS;
+  let params = {};
   try {
     params = JSON.parse(user.passwordParams || "{}");
   } catch {
-    params = PASSWORD_PARAMS;
+    params = {};
   }
 
   if (params.algorithm === "bcrypt" || String(user.passwordHash || "").startsWith("$2")) {
     return bcrypt.compare(String(password), user.passwordHash);
   }
-
-  const derived = await scryptAsync(String(password), user.passwordSalt, Number(params.keylen) || 64, {
-    N: Number(params.N) || PASSWORD_PARAMS.N,
-    r: Number(params.r) || PASSWORD_PARAMS.r,
-    p: Number(params.p) || PASSWORD_PARAMS.p,
-  });
-  const expected = Buffer.from(user.passwordHash, "hex");
-  const actual = Buffer.from(derived.toString("hex"), "hex");
-  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+  return false;
 }
 
 async function issueToken(user) {
@@ -158,7 +146,6 @@ async function upgradePasswordHashIfNeeded(password, user) {
   if (params.algorithm === "bcrypt" && Number(params.rounds) >= BCRYPT_ROUNDS) return;
   const passwordData = await hashPassword(password);
   user.passwordHash = passwordData.passwordHash;
-  user.passwordSalt = passwordData.passwordSalt;
   user.passwordParams = passwordData.passwordParams;
   await user.save();
 }
@@ -517,7 +504,6 @@ app.put("/api/users/me", async (req, res) => {
     }
     const passwordData = await hashPassword(newPassword);
     user.passwordHash = passwordData.passwordHash;
-    user.passwordSalt = passwordData.passwordSalt;
     user.passwordParams = passwordData.passwordParams;
   }
 
