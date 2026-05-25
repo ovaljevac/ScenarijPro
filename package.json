@@ -7,11 +7,10 @@
     "node": ">=20"
   },
   "scripts": {
-    "check": "node --check server.js && node --check db.js && node --check config/env.js",
+    "check": "node --check server.js && node --check db.js && node --check config/app-config.js",
     "test": "npm run check",
-    "db:export": "node scripts/migrate-railway.js export",
-    "db:import": "node scripts/migrate-railway.js import",
-    "db:migrate": "node scripts/migrate-railway.js migrate",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
     "start": "node server.js"
   },
   "repository": {

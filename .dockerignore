@@ -1,7 +1,8 @@
 node_modules
 .env
 .env.*
-!.env.example
 .git
 screenshots
 npm-debug.log*
+server.log
+server.err.log

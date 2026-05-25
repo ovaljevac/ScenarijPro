@@ -109,24 +109,37 @@ Example operations:
 
 ---
 
-## Deployment
+## Configuration
 
-### Required environment variables
+The app does not use a `.env` file. Runtime and database settings are hardcoded in:
 
-Copy `.env.example` to `.env` locally. On a deployment platform, set these as environment variables instead of committing `.env`.
-
-```env
-DB_NAME=your_database_name
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_HOST=localhost
-DB_DIALECT=mysql
-DB_SYNC=none
-PORT=3000
-NODE_ENV=production
+```text
+config/app-config.js
 ```
 
-Use `DB_SYNC=none` in production. Use `DB_SYNC=alter` only for local development or a controlled staging environment. `DB_SYNC=force` is blocked in production because it deletes and recreates tables.
+Local MySQL settings:
+
+```js
+name: "scenarijpro"
+user: "root"
+password: ""
+host: "localhost"
+port: 3306
+dialect: "mysql"
+```
+
+Docker MySQL settings are also hardcoded in the same file. When the app runs inside Docker it uses the Compose service name `db`:
+
+```js
+name: "scenarijpro"
+user: "scenarijpro"
+password: "scenarijpro_password"
+host: "db"
+port: 3306
+dialect: "mysql"
+```
+
+The server listens on port `3000`. Database sync mode is controlled by `dbSync` in `config/app-config.js`; the default is `"alter"` so a fresh MySQL container gets the required tables automatically.
 
 ### Start command
 
@@ -149,10 +162,68 @@ The app serves static pages from `public/` and exposes the main page at:
 
 ### Platform notes
 
-- Render/Railway/Fly/Heroku-style platforms can use the included `Procfile`.
-- Docker deployments can use the included `Dockerfile`.
-- Configure a MySQL database before starting the app.
-- Do not deploy `.env`; it is intentionally ignored by git.
+- Docker deployments can use the included `Dockerfile` and `docker-compose.yml`.
+- `docker-compose.yml` starts both containers required by the ARM task: the web app and a MySQL DB container.
+- The app does not require `.env`; database values are hardcoded in `config/app-config.js`.
+
+### Docker start
+
+```bash
+docker compose up -d --build
+```
+
+Stop containers:
+
+```bash
+docker compose down
+```
+
+### GitHub Actions deployment
+
+The repository includes `.github/workflows/deploy.yml`.
+
+On push to `main` or `master`, GitHub Actions:
+
+- installs dependencies and runs `npm test`
+- validates `docker-compose.yml`
+- builds the Docker image
+- uploads the repository to the EC2 instance over SSH
+- runs `docker compose up -d --build` on the EC2 instance
+
+Required GitHub repository secrets:
+
+```text
+EC2_HOST      Public IP or DNS name of the EC2 instance
+EC2_USER      SSH user, usually ubuntu
+EC2_SSH_KEY   Private SSH key for the EC2 instance
+EC2_PORT      Optional, defaults to 22
+```
+
+The EC2 instance must already have Docker with the Compose plugin installed.
+
+### Apache virtual host
+
+Template configuration is in:
+
+```text
+deploy/apache/scenarijpro.conf
+```
+
+Replace `scenarijpro.arm.com` with the selected project domain, copy the file to Apache sites, enable required modules, then reload Apache:
+
+```bash
+sudo cp deploy/apache/scenarijpro.conf /etc/apache2/sites-available/scenarijpro.conf
+sudo a2enmod proxy proxy_http ssl headers
+sudo a2ensite scenarijpro.conf
+sudo systemctl reload apache2
+```
+
+Place the SSL certificate and key at:
+
+```text
+/etc/ssl/certs/scenarijpro.crt
+/etc/ssl/private/scenarijpro.key
+```
 
 ---
 

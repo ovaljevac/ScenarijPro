@@ -6,6 +6,7 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 
 import { sequelize } from "./db.js";
+import { appConfig } from "./config/app-config.js";
 import { Scenario, Line, Delta, Checkpoint, User, ScenarioAssignment } from "./models/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,10 +20,7 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 const rateBuckets = new Map();
 
 app.use((req, res, next) => {
-  const allowedOrigins = String(process.env.CORS_ORIGINS || "")
-    .split(",")
-    .map(origin => origin.trim())
-    .filter(Boolean);
+  const allowedOrigins = appConfig.corsOrigins;
   const origin = req.headers.origin;
   const requestHost = req.headers.host;
   const sameOrigin = origin && requestHost && (() => {
@@ -32,7 +30,7 @@ app.use((req, res, next) => {
       return false;
     }
   })();
-  const allowAnyOrigin = process.env.NODE_ENV !== "production" && allowedOrigins.length === 0;
+  const allowAnyOrigin = appConfig.environment !== "production" && allowedOrigins.length === 0;
   const allowedOrigin = allowAnyOrigin ? "*" : (sameOrigin || allowedOrigins.includes(origin)) ? origin : "";
 
   if (allowedOrigin) res.header("Access-Control-Allow-Origin", allowedOrigin);
@@ -1101,20 +1099,20 @@ app.get("/health", (req, res) => {
 
 app.use("/", express.static(path.join(__dirname, "public")));
 
-const PORT = process.env.PORT || 3000;
+const PORT = appConfig.port;
 
 try {
   await sequelize.authenticate();
-  const syncMode = String(process.env.DB_SYNC || "none").toLowerCase();
+  const syncMode = String(appConfig.dbSync || "none").toLowerCase();
   if (syncMode === "alter") {
     await sequelize.sync({ alter: true });
   } else if (syncMode === "force") {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("DB_SYNC=force is not allowed in production.");
+    if (appConfig.environment === "production") {
+      throw new Error('appConfig.dbSync = "force" is not allowed in production.');
     }
     await sequelize.sync({ force: true });
   } else if (syncMode !== "none") {
-    throw new Error("DB_SYNC must be one of: none, alter, force.");
+    throw new Error("appConfig.dbSync must be one of: none, alter, force.");
   }
 } catch (e) {
   console.error("DB init failed:", e);

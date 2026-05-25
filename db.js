@@ -1,14 +1,14 @@
 import { Sequelize } from "sequelize";
-import { requireEnv } from "./config/env.js";
+import { databaseConfig } from "./config/app-config.js";
 
 export const sequelize = new Sequelize(
-  requireEnv("DB_NAME"),
-  requireEnv("DB_USER"),
-  requireEnv("DB_PASSWORD"),
+  databaseConfig.name,
+  databaseConfig.user,
+  databaseConfig.password,
   {
-  host: requireEnv("DB_HOST"),
-  port: Number(process.env.DB_PORT || 3306),
-  dialect: requireEnv("DB_DIALECT"),
-  logging: false,
+    host: databaseConfig.host,
+    port: databaseConfig.port,
+    dialect: databaseConfig.dialect,
+    logging: false,
   }
 );

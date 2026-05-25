@@ -1,0 +1,35 @@
+services:
+  app:
+    build: .
+    image: scenarijpro-app:latest
+    container_name: scenarijpro-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  db:
+    image: mysql:8.0
+    container_name: scenarijpro-db
+    restart: unless-stopped
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: scenarijpro
+      MYSQL_USER: scenarijpro
+      MYSQL_PASSWORD: scenarijpro_password
+      MYSQL_ROOT_PASSWORD: scenarijpro_root_password
+    volumes:
+      - scenarijpro-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uscenarijpro -pscenarijpro_password --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  scenarijpro-db-data:
