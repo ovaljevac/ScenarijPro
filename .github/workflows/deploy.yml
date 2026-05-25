@@ -9,40 +9,29 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure SSH
+      - name: Deploy on EC2
         run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/arm_key
-          chmod 600 ~/.ssh/arm_key
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+          set -e
 
-      - name: Deploy to EC2
-        run: |
-          ssh -i ~/.ssh/arm_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
-            set -e
+          rm -rf ~/ScenarijPro
+          git clone https://github.com/ovaljevac/ScenarijPro.git ~/ScenarijPro
 
-            rm -rf ~/ScenarijPro
-            git clone https://github.com/ovaljevac/ScenarijPro.git ~/ScenarijPro
+          cd ~/ScenarijPro
 
-            cd ~/ScenarijPro
+          sudo docker rm -f scenarijpro-app || true
+          sudo docker build -t scenarijpro-app:latest .
 
-            sudo docker rm -f scenarijpro-app || true
-            sudo docker build -t scenarijpro-app:latest .
+          sudo docker run -d \
+            --name scenarijpro-app \
+            --restart unless-stopped \
+            --add-host db:${{ secrets.DB_HOST }} \
+            -p 127.0.0.1:3000:3000 \
+            scenarijpro-app:latest
 
-            sudo docker run -d \
-              --name scenarijpro-app \
-              --restart unless-stopped \
-              --add-host db:${{ secrets.DB_HOST }} \
-              -p 127.0.0.1:3000:3000 \
-              scenarijpro-app:latest
-
-            cat > /tmp/www.conf <<APACHE
+          cat > /tmp/www.conf <<APACHE
           <VirtualHost *:80>
               ServerName tim1.arm.com
               ServerAlias www.tim1.arm.com
@@ -53,14 +42,13 @@ jobs:
           </VirtualHost>
           APACHE
 
-            sudo cp /tmp/www.conf /etc/apache2/sites-available/www.conf
-            sudo a2enmod proxy proxy_http headers
-            sudo a2dissite 000-default.conf || true
-            sudo a2ensite www.conf
-            sudo systemctl reload apache2
-          '
+          sudo cp /tmp/www.conf /etc/apache2/sites-available/www.conf
+          sudo a2enmod proxy proxy_http headers
+          sudo a2dissite 000-default.conf || true
+          sudo a2ensite www.conf
+          sudo systemctl reload apache2
 
       - name: Health check
         run: |
-          sleep 10
-          curl -f http://${{ secrets.EC2_HOST }}/health
+          sleep 15
+          curl -f http://127.0.0.1:3000/health
