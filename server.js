@@ -1097,6 +1097,10 @@ app.get("/health", (req, res) => {
   });
 });
 
+app.get("/", (req, res) => {
+  res.redirect("/html/projects.html");
+});
+
 app.use("/", express.static(path.join(__dirname, "public")));
 
 const PORT = appConfig.port;
