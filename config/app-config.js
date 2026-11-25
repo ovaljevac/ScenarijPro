@@ -10,10 +10,10 @@ export const appConfig = Object.freeze({
 });
 
 export const databaseConfig = Object.freeze({
-  name: "scenarijpro",
-  user: runningInDocker ? "scenarijpro" : "root",
-  password: runningInDocker ? "scenarijpro_password" : "",
-  host: runningInDocker ? "db" : "localhost",
-  port: 3306,
+  name: process.env.DB_NAME ?? "scenarijpro",
+  user: process.env.DB_USER ?? (runningInDocker ? "scenarijpro" : "root"),
+  password: process.env.DB_PASSWORD ?? (runningInDocker ? "scenarijpro_password" : ""),
+  host: process.env.DB_HOST ?? (runningInDocker ? "db" : "localhost"),
+  port: Number(process.env.DB_PORT ?? 3306),
   dialect: "mysql",
 });
